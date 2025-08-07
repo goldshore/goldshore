@@ -3,12 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="keywords" content="AI, fintech, ghostwriting, e-commerce, consulting, cybersecurity, New York">
   <meta name="description" content="Gold Shore Labs – Building innovative solutions with AI, cybersecurity, and community-driven tech." />
   <title>Gold Shore Labs</title>
   <script src="https://cdn.tailwindcss.com"></script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-6208QFYB08"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-6208QFYB08');
+</script>  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+  <!-- Include in <head> -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />                                                                                                                                                 
+                                                                                                                                                          
+   <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+  
 </head>
 <body class="bg-gray-100 text-gray-900 font-sans">
-
   <!-- Header -->
   <header class="bg-white shadow-md sticky top-0 z-50">
     <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
@@ -23,6 +40,20 @@
   </header>
 
   <!-- Hero -->
+
+<!-- Slider -->
+<div class="swiper mySwiper">
+  <div class="swiper-wrapper">
+    <div class="swiper-slide"><img src="/assets/images/hero1.jpg" alt="AI Fintech App"></div>
+    <div class="swiper-slide"><img src="/assets/images/hero2.jpg" alt="Field Manual"></div>
+    <div class="swiper-slide"><img src="/assets/images/hero3.jpg" alt="E-Commerce"></div>
+  </div>
+</div>
+
+<!-- Init Script -->
+<script>
+  var swiper = new Swiper(".mySwiper", { loop: true, autoplay: true });
+</script>
   <section class="bg-blue-600 text-white text-center py-20">
     <h2 class="text-4xl font-bold mb-4">Innovating the Future</h2>
     <p class="text-lg max-w-xl mx-auto">AI-powered development, cybersecurity, and educational tech for a better tomorrow.</p>
@@ -96,6 +127,68 @@
     </div>
   </section>
 
+
+  <!-- Project Slider -->
+  <section class="py-12 bg-white">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+      <h2 class="text-3xl font-bold mb-8">Featured Projects</h2>
+      <div class="swiper mySwiper">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide"><img src="images/project1.jpg" class="mx-auto rounded shadow" alt="Project 1" /></div>
+          <div class="swiper-slide"><img src="images/project2.jpg" class="mx-auto rounded shadow" alt="Project 2" /></div>
+          <div class="swiper-slide"><img src="images/project3.jpg" class="mx-auto rounded shadow" alt="Project 3" /></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+<section id="projects" class="py-16 bg-white">
+  <div class="max-w-6xl mx-auto px-4">
+    <h3 class="text-2xl font-bold text-center mb-12">Featured Projects</h3>
+    <div class="grid md:grid-cols-3 gap-8 text-center">
+      <div class="p-6 bg-gray-100 rounded shadow">
+        <img src="/assets/images/shyborg-manual.jpg" alt="Field Manual" class="mb-4 mx-auto rounded">
+        <h4 class="font-semibold text-lg">Shyborg Survival Field Manual</h4>
+        <p class="text-sm text-gray-600">Symbolic ghostwriting project--AI meets mythic trauma recovery.</p>
+      </div>
+      <div class="p-6 bg-gray-100 rounded shadow">
+        <img src="/assets/images/fintech-app.jpg" alt="AI Fintech" class="mb-4 mx-auto rounded">
+        <h4 class="font-semibold text-lg">AI-Powered Fintech App</h4>
+        <p class="text-sm text-gray-600">Custom trading signal engine with segmentation and adaptive filters.</p>
+      </div>
+      <div class="p-6 bg-gray-100 rounded shadow">
+        <img src="/assets/images/multisite.jpg" alt="WordPress Multisite" class="mb-4 mx-auto rounded">
+        <h4 class="font-semibold text-lg">WP Multisite Integration</h4>
+        <p class="text-sm text-gray-600">Built and deployed WP plugins across multiple subdomains.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+  <!-- Tech Stack Tiles -->
+  <section class="py-12 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+      <h2 class="text-3xl font-bold mb-8">Tech Stack</h2>
+      <div class="grid grid-cols-3 md:grid-cols-6 gap-6">
+        <img src="icons/html5.svg" class="h-12 mx-auto" alt="HTML5" />
+        <img src="icons/css3.svg" class="h-12 mx-auto" alt="CSS3" />
+        <img src="icons/javascript.svg" class="h-12 mx-auto" alt="JavaScript" />
+        <img src="icons/bootstrap.svg" class="h-12 mx-auto" alt="Bootstrap" />
+        <img src="icons/php.svg" class="h-12 mx-auto" alt="PHP" />
+        <img src="icons/python.svg" class="h-12 mx-auto" alt="Python" />
+      </div>
+    </div>
+  </section>
+
+<script>
+  var swiper = new Swiper(".mySwiper", {
+    loop: true,
+    autoplay: { delay: 3000 },
+    slidesPerView: 1,
+    spaceBetween: 20,
+  });
+</script>
+
   <!-- Footer -->
   <footer class="bg-white text-center py-6 text-sm text-gray-500">
     &copy; 2025 Gold Shore Labs. All rights reserved.
@@ -103,3 +196,33 @@
 
 </body>
 </html>
+```html                                                                                                                                                      
+  <!-- Add OpenGraph and Twitter Card metadata -->
+  <meta property="og:title" content="Gold Shore Labs - Innovating with AI & Cybersecurity" />
+  <meta property="og:description" content="Discover cutting-edge solutions in AI, cybersecurity, and community-driven technology with Gold Shore Labs." />
+  <meta property="og:image" content="/assets/logo.png" />
+  <meta property="og:url" content="https://www.goldshorelabs.com" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Gold Shore Labs - Innovating  ```html
+<!-- Legal Disclaimer -->
+<section class="py-12 bg-white">
+  <div class="max-w-6xl mx-auto px-4 text-center">
+    <p class="text-sm text-gray-600">
+      Disclaimer: The Arm's Way barrier sleeve is not a substitute for standard infection control practices. Always use personal protective equipment as required. Consult healthcare guidelines for comprehensive protection practices.
+    </p>
+  </div>
+</section>
+
+<!-- SEO Metadata -->
+<meta name="description" content="Arm's Way offers a patented barrier sleeve designed to promote medical hygiene by blocking 99.9% of bacteria and viruses, ideal for hospitals and clinics." />
+<meta name="keywords" content="Medical hygiene, Infection control, Barrier sleeve, Hospital supply, Clinic safety" />
+<meta property="og:title" content="Arm's Way - Patented Barrier Sleeve for Infection Control" />
+<meta property="og:description" content="Promote hygiene with Arm's Way barrier sleeve, blocking 99.9% of bacteria/viruses. Essential for hospitals and doctors." />
+<meta property="og:image" content="https://armsway.com/assets/og-image.jpg" />
+<meta property="og:url" content="https://armsway.com" />
+<meta name="twitter:card" content="summary_large_image" />
+
+```
+
+### Commit Message Suggestion:
+"Added legal disclaimer, SEO metadata with OpenGraph and Twitter Card headers to ensure better online visibility and adherence to medical compliance guidelines."
