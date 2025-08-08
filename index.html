@@ -1,246 +1,311 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="keywords" content="AI, fintech, ghostwriting, e-commerce, consulting, cybersecurity, New York">
-  <meta name="description" content="Gold Shore Labs – Building innovative solutions with AI, cybersecurity, and community-driven tech." />
-  <title>Gold Shore Labs</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-6208QFYB08"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-6208QFYB08');
-</script>
-<link rel="icon" href="images/favicon.ico" type="image/x-icon">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
-  <!-- Include in <head> -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css" />                                                                                                                                                                                                                                                                                                          
-   <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
-</head>
-<body class="bg-gray-100 text-gray-900 font-sans">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gold Shore Labs -- We steer capital, not manage it.</title>
+  <meta name="description" content="Gold Shore Labs: AI, automation, cybersecurity, and mythic-grade systems. We do not manage capital -- we steer it." />
+  <meta property="og:title" content="Gold Shore Labs" />
+  <meta property="og:description" content="We do not manage capital -- we steer it." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="/assets/img/logo/penrose-og.png" />
+  <meta name="theme-color" content="#0a0f1a" />
 
-  <!-- Header -->
-  <header class="bg-white shadow-md sticky top-0 z-50">
-   <img src="/assets                                                                                                                                                      
-    <div class="swiper-wrapper">
-      <div class="swiper-slide">
-        <img src="/assets/images/slide1.jpg" ```html                                                                                                                                                      
-/images/logo.png" alt="ArmsWay logo" class="h-12">
-   <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-      <a href="/" class="text-xl font-bold text-gray-900="Innovative tech solutions" class="w-full h-full object-cover">
-      </div>
-      <div class="swiper-slide">
-        <img src="/assets/images/slide2.jpg" alt="Cutting-edge cybersecurity" class="w-full h-full object-cover">
-      </div>
-      <div class="swiper-slide">
-        <img src="/assets/images/slide3.jpg" alt="Advancements in educational technology" class="w-full h-full object-cover">
+  <!-- Favicons (text-free Penrose) -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/logo/penrose-32.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/assets/img/logo/penrose-48.png" />
+  <link rel="icon" type="image/png" sizes="180x180" href="/assets/img/logo/penrose-180.png" />
+  <link rel="apple-touch-icon" href="/assets/img/logo/penrose-180.png" />
+
+  <!-- Performance hints for GA -->
+  <link rel="preconnect" href="https://www.google-analytics.com" crossorigin>
+  <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin>
+
+  <!-- Google Analytics 4 (replace G-XXXXXXXXXX with your property) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-XXXXXXXXXX', { anonymize_ip: true });
+    // tiny helper we’ll call from main.js
+    window.gtagTrack = function(name, params){ try { gtag('event', name, params || {}); } catch(e){} };
+  </script>
+
+  <!-- Tailwind CDN (fine for static GitHub Pages / Working Copy) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Swiper -->
+  <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+  <script defer src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+</head>
+<body class="bg-neutral-950 text-neutral-100 antialiased">
+  <!-- Skip link -->
+  <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 bg-neutral-900 px-3 py-1 rounded">Skip to content</a>
+
+  <!-- Header / Nav -->
+  <header class="sticky top-0 z-50 backdrop-blur bg-neutral-950/70 border-b border-neutral-800">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Brand -->
+        <a href="/" class="flex items-center gap-3" aria-label="Gold Shore Labs">
+          <img
+            src="/assets/img/logo/penrose-lockup-dark.png"
+            srcset="/assets/img/logo/penrose-lockup-dark.png 1x, /assets/img/logo/penrose-512.png 2x"
+            alt=""
+            class="h-12 md:h-16 w-auto select-none"
+            decoding="async"
+            fetchpriority="high"
+          />
+        </a>
+
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center gap-8" aria-label="Primary">
+          <a href="#about" class="hover:text-white/90">About</a>
+          <a href="#services" class="hover:text-white/90">Services</a>
+          <a href="#work" class="hover:text-white/90">Work</a>
+          <a href="#team" class="hover:text-white/90">Team</a>
+          <a href="#contact" class="hover:text-white/90">Contact</a>
+          <a href="#contact" data-cta="book-consult-header" class="inline-flex items-center rounded bg-white text-neutral-900 px-3 py-1.5 text-sm font-semibold hover:bg-white/90">Book a consult</a>
+        </nav>
+
+        <!-- Mobile Toggle -->
+        <button id="navToggle" class="md:hidden inline-flex items-center justify-center p-2 rounded border border-neutral-700 hover:bg-neutral-900" aria-controls="mobileMenu" aria-expanded="false" aria-label="Toggle menu">
+          <svg id="iconOpen" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+          <svg id="iconClose" xmlns="http://www.w3.org/2000/svg" class="hidden h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
       </div>
     </div>
-    <!-- Add Pagination -->
-    <div class="swiper-pagination"></div>
-    <!-- Add Navigation -->
-    <div class="swiper-button-next"></div>/images/penrose-logo.png" alt="Penrose triangle logo" class="h-12">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold text-blue-600">Gold Shore Labs</h1>
-      <nav class="space-x-4 text-sm">
-        <a href="#about" class="hover:text-blue-600">About</a>
-        <a href="#services" class="hover:text-blue-600">Services</a>
-        <a href="#team" class="hover:text-blue-600">Team</a>
-        <a href="#contact" class="hover:text-blue-600">Contact</a>
+
+    <!-- Mobile Nav Panel -->
+    <div id="mobileMenu" class="md:hidden hidden border-t border-neutral-800">
+      <nav class="px-4 py-4 space-y-3" aria-label="Mobile">
+        <a href="#about" class="block py-2">About</a>
+        <a href="#services" class="block py-2">Services</a>
+        <a href="#work" class="block py-2">Work</a>
+        <a href="#team" class="block py-2">Team</a>
+        <a href="#contact" class="block py-2">Contact</a>
+        <a href="#contact" data-cta="book-consult-mobile" class="inline-flex items-center rounded bg-white text-neutral-900 px-3 py-2 text-sm font-semibold hover:bg-white/90">Book a consult</a>
       </nav>
     </div>
   </header>
-  <!-- Hero -->
-<!-- Init Script -->
-<script>
-  var swiper = new Swiper(".mySwiper", { loop: true, autoplay: true });
-</script>
-  <section class="bg-blue-600 text-white text-center py-20">
-    <h2 class="text-4xl font-bold mb-4">Innovating the Future</h2>
-    <p class="text-lg max-w-xl mx-auto">AI-powered development, cybersecurity, and educational tech for a better tomorrow.</p>
-  </section>
-<!-- Slider -->
-<div class="swiper mySwiper">
-  <div class="swiper-wrapper"> 
-    <div class="swiper-slide"><img src="/assets/images/hsl-hero1.jpg" alt="AI Fintech App"></div>
-    <div class="swiper-slide"><img src="/assets/images/gsl-hero2.jpg" alt="Field Manual"></div>
-    <div class="swiper-slide"><img src="/assets/images/gsl-hero3.jpg" alt="E-Commerce"></div>
-  </div>
-</div>
 
-
-
-  <!-- About -->
-  <section id="about" class="py-16 px-4 bg-white">
-    <div class="max-w-4xl mx-auto text-center">
-      <h3 class="text-2xl font-bold mb-4">About Us</h3>
-      <p class="text-gray-600">Gold Shore Labs is a hybrid technology company dedicated to community empowerment, product innovation, and privacy-first software. Our team integrates cutting-edge tools with real-world needs—from AI to grassroots outreach.</p>
-    </div>
-  </section>
-
-  <!-- Services -->
-  <section id="services" class="py-16 px-4 bg-gray-50">
-    <div class="max-w-6xl mx-auto text-center">
-      <h3 class="text-2xl font-bold mb-12">Our Services</h3>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div class="bg-white p-6 rounded shadow">
-          <h4 class="font-semibold text-lg mb-2">Cybersecurity</h4>
-          <p class="text-sm text-gray-600">Threat prevention, audits, and protection for your business.</p>
+  <main id="main">
+    <!-- Hero -->
+    <section class="relative overflow-hidden">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
+        <div>
+          <p class="text-sm uppercase tracking-widest text-white/60">Innovating the Future</p>
+          <h1 class="mt-3 text-4xl/tight md:text-5xl/tight font-extrabold">
+            We steer capital, not manage it.
+          </h1>
+          <p class="mt-4 text-white/80 max-w-prose">
+            Privacy-first software, modular systems, and mythic logic for founders who need leverage without noise.
+          </p>
+          <div class="mt-8 flex flex-wrap gap-3">
+            <a href="#work" data-cta="hero-see-work" class="inline-flex items-center rounded bg-white text-neutral-900 px-4 py-2 font-semibold hover:bg-white/90">See our work</a>
+            <a href="#contact" data-cta="hero-join-lore" class="inline-flex items-center rounded border border-white/20 px-4 py-2 font-semibold hover:bg-neutral-900">A 21st century Expert Network</a>
+          </div>
         </div>
-        <div class="bg-white p-6 rounded shadow">
-          <h4 class="font-semibold text-lg mb-2">AI + Automation</h4>
-          <p class="text-sm text-gray-600">Build tools using GPT-4, Whisper, and cloud integrations.</p>
-        </div>
-        <div class="bg-white p-6 rounded shadow">
-          <h4 class="font-semibold text-lg mb-2">Mentorship & Outreach</h4>
-          <p class="text-sm text-gray-600">Free training and consulting for underserved communities.</p>
+
+        <!-- Swiper Slider -->
+        <div class="md:-mr-8">
+          <div class="swiper hero-swiper rounded-xl ring-1 ring-white/10 overflow-hidden">
+            <div class="swiper-wrapper">
+              <div class="swiper-slide">
+                <img src="/assets/img/hero/hero-1.jpg" alt="AI fintech dashboards and signal tooling" class="w-full h-80 object-cover" />
+              </div>
+              <div class="swiper-slide">
+                <img src="/assets/img/hero/hero-2.jpg" alt="Field Manual creative systems in production" class="w-full h-80 object-cover" />
+              </div>
+              <div class="swiper-slide">
+                <img src="/assets/img/hero/hero-3.jpg" alt="E-commerce infrastructure and automation" class="w-full h-80 object-cover" />
+              </div>
+            </div>
+            <div class="swiper-pagination"></div>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- Team -->
-  <section id="team" class="py-16 px-4 bg-white">
-    <div class="max-w-6xl mx-auto text-center">
-      <h3 class="text-2xl font-bold mb-4">Meet the Team</h3>
-      <p class="text-gray-600 mb-10">Brothers, friends, creators—Gold Shore’s team is a fusion of disciplines: tech, art, education, and hustle.</p>
-      <div class="flex flex-wrap justify-center gap-8">
-        <div class="w-40">
-          <div class="h-40 w-40 rounded-full bg-gray-300 mb-2"></div>
-          <p class="font-semibold">Robert Marston</p>
-          <p class="text-sm text-gray-500">Founder</p>
-        </div>
-        <div class="w-40">
-          <div class="h-40 w-40 rounded-full bg-gray-300 mb-2"></div>
-          <p class="font-semibold">Joey M.</p>
-          <p class="text-sm text-gray-500">Resale Ops</p>
-        </div>
-        <div class="w-40">
-          <div class="h-40 w-40 rounded-full bg-gray-300 mb-2"></div>
-          <p class="font-semibold">Matteo</p>
-          <p class="text-sm text-gray-500">Firearms & Education</p>
-        </div>
-      </div>
-    </div>
-  </section>
+    <!-- Fancy Image CTA cards (clickable) -->
+    <section id="work" class="py-14 md:py-20 border-t border-neutral-800 bg-neutral-950">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl md:text-3xl font-bold">Selected work</h2>
+        <p class="mt-2 text-white/70">Tap into live systems and case studies.</p>
 
-  <!-- Contact -->
-  <section id="contact" class="py-16 px-4 bg-gray-50">
-    <div class="max-w-3xl mx-auto text-center">
-      <h3 class="text-2xl font-bold mb-4">Contact Us</h3>
-      <p class="text-gray-600 mb-8">Have a project or idea? Reach out anytime:</p>
-      <form class="grid gap-4" action="https://formspree.io/f/your_form_id" method="POST">
-        <input type="text" name="name" placeholder="Your Name" class="p-3 rounded border border-gray-300 w-full" required>
-        <input type="email" name="email" placeholder="Your Email" class="p-3 rounded border border-gray-300 w-full" required>
-        <textarea name="message" rows="5" placeholder="Message" class="p-3 rounded border border-gray-300 w-full" required></textarea>
-        <button type="submit" class="bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700">Send</button>
-      </form>
-    </div>
-  </section>
+        <div class="mt-8 grid gap-6 md:grid-cols-3">
+          <!-- Card 1 -->
+          <a href="#contact" data-cta="card-ai-fintech" class="group relative overflow-hidden rounded-xl ring-1 ring-white/10">
+            <img src="/assets/img/cards/ai-fintech.jpg" alt="AI Fintech App" class="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+            <div class="absolute inset-x-0 bottom-0 p-4">
+              <h3 class="text-lg font-semibold">AI Fintech App</h3>
+              <p class="text-sm text-white/80">Signals, segmentation, and capital steering.</p>
+              <span class="mt-2 inline-block text-sm font-semibold text-white/90 underline underline-offset-4">Request a demo →</span>
+            </div>
+          </a>
 
+          <!-- Card 2 -->
+          <a href="#contact" data-cta="card-field-manual" class="group relative overflow-hidden rounded-xl ring-1 ring-white/10">
+            <img src="/assets/img/cards/field-manual.jpg" alt="Field Manual" class="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+            <div class="absolute inset-x-0 bottom-0 p-4">
+              <h3 class="text-lg font-semibold">Field Manual</h3>
+              <p class="text-sm text-white/80">Narrative systems and survival-grade messaging.</p>
+              <span class="mt-2 inline-block text-sm font-semibold text-white/90 underline underline-offset-4">Read the brief →</span>
+            </div>
+          </a>
 
-  <!-- Project Slider -->
-  <section class="py-12 bg-white">
-    <div class="max-w-6xl mx-auto px-4 text-center">
-      <h2 class="text-3xl font-bold mb-8">Featured Projects</h2>
-      <div class="swiper mySwiper">
-        <div class="swiper-wrapper">
-          <div class="swiper-slide"><img src="images/project1.jpg" class="mx-auto rounded shadow" alt="Project 1" /></div>
-          <div class="swiper-slide"><img src="images/project2.jpg" class="mx-auto rounded shadow" alt="Project 2" /></div>
-          <div class="swiper-slide"><img src="images/project3.jpg" class="mx-auto rounded shadow" alt="Project 3" /></div>
+          <!-- Card 3 -->
+          <a href="#contact" data-cta="card-ecommerce" class="group relative overflow-hidden rounded-xl ring-1 ring-white/10">
+            <img src="/assets/img/cards/ecommerce.jpg" alt="E-Commerce" class="h-56 w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+            <div class="absolute inset-x-0 bottom-0 p-4">
+              <h3 class="text-lg font-semibold">E-commerce Systems</h3>
+              <p class="text-sm text-white/80">Logistics, automations, and marketplaces.</p>
+              <span class="mt-2 inline-block text-sm font-semibold text-white/90 underline underline-offset-4">See the stack →</span>
+            </div>
+          </a>
         </div>
       </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="py-14 md:py-20 border-t border-neutral-800">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6">
+        <h2 class="text-2xl md:text-3xl font-bold">About</h2>
+        <p class="mt-3 text-white/80">
+          Gold Shore Labs is a hybrid technology atelier at the intersection of AI, resilience, and digital sovereignty.
+          Every project is designed not to manage capital, but to steer it.
+        </p>
+      </div>
+    </section>
+
+    <!-- Services -->
+    <section id="services" class="py-14 md:py-20 border-t border-neutral-800 bg-neutral-950">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl md:text-3xl font-bold">Services</h2>
+        <div class="mt-8 grid gap-6 md:grid-cols-3">
+          <div class="rounded-xl border border-neutral-800 p-6 bg-neutral-900/30">
+            <h3 class="font-semibold">Cybersecurity</h3>
+            <p class="mt-2 text-white/80">Threat prevention, audits, and protection for your business.</p>
+          </div>
+          <div class="rounded-xl border border-neutral-800 p-6 bg-neutral-900/30">
+            <h3 class="font-semibold">AI + Automation</h3>
+            <p class="mt-2 text-white/80">GPT, Whisper, and cloud integrations that scale.</p>
+          </div>
+          <div class="rounded-xl border border-neutral-800 p-6 bg-neutral-900/30">
+            <h3 class="font-semibold">Mentorship & Outreach</h3>
+            <p class="mt-2 text-white/80">Free training and consulting for underserved communities.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tech stack icons -->
+    <section class="py-12 border-t border-neutral-800">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <h2 class="text-2xl font-bold">Tech stack</h2>
+        <div class="mt-6 grid grid-cols-3 sm:grid-cols-6 gap-6 items-center">
+          <img src="/assets/img/tech/html5.svg" alt="HTML5" class="h-10 mx-auto opacity-80" />
+          <img src="/assets/img/tech/css3.svg" alt="CSS3" class="h-10 mx-auto opacity-80" />
+          <img src="/assets/img/tech/js.svg" alt="JavaScript" class="h-10 mx-auto opacity-80" />
+          <img src="/assets/img/tech/python.svg" alt="Python" class="h-10 mx-auto opacity-80" />
+          <img src="/assets/img/tech/tailwind.svg" alt="Tailwind CSS" class="h-10 mx-auto opacity-80" />
+          <img src="/assets/img/tech/swiper.svg" alt="Swiper" class="h-10 mx-auto opacity-80" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Team -->
+    <section id="team" class="py-14 md:py-20 border-t border-neutral-800 bg-neutral-950">
+      <div class="mx-auto max-w-4xl px-4 sm:px-6">
+        <h2 class="text-2xl md:text-3xl font-bold">Team</h2>
+        <div class="mt-6 flex items-center gap-4">
+          <img src="/assets/img/team/robert.jpg" alt="Robert M." class="h-14 w-14 rounded-full object-cover ring-1 ring-white/10" />
+          <div>
+            <p class="font-semibold">Robert M.</p>
+            <p class="text-white/70 text-sm">Founder</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="py-14 md:py-20 border-t border-neutral-800">
+      <div class="mx-auto max-w-3xl px-4 sm:px-6">
+        <h2 class="text-2xl md:text-3xl font-bold">Contact</h2>
+        <p class="mt-2 text-white/80">Have a project or idea? Reach out anytime.</p>
+        
+        <form id="contact" class="mt-6        grid gap-4" method="POST" action="/api/contact">
+          <label class="grid gap-1">
+            <span class="text-sm text-white/70">Your email</span>
+            <input name="email" type="email" required class="bg-neutral-900 border border-neutral-800 rounded px-3 py-2" />
+          </label>
+          <label class="grid gap-1">
+            <span class="text-sm text-white/70">Message</span>
+            <textarea name="message" rows="5" required class="bg-neutral-900 border border-neutral-800 rounded px-3 py-2"></textarea>
+          </label>
+
+          <!-- Cloudflare Turnstile -->
+          <div class="cf-turnstile" data-sitekey="0X4AAAAAABpjj·p050UPFCrE" data-theme="dark" data-callback="onTsOk"></div>
+
+          <button class="inline-flex justify-center rounded bg-white text-neutral-900 px-4 py-2 font-semibold hover:bg-white/90">
+            Send
+          </button>
+        </form>
+
+        <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+        <script>
+          function onTsOk(){ /* optional: enable submit button, show 'verified' state */ }
+        </script>
+        
+        <div id="contact-success" class="hidden mt-4 rounded bg-emerald-600/20 text-emerald-200 p-3">
+          Thanks! We’ll get back to you soon.
+        </div>
+        <script>
+          if (location.hash === '#contact-success') {
+            document.getElementById('contact-success').classList.remove('hidden');
+          }
+        </script>
+
+        <form id="contactForm" class="mt-6 grid gap-4" action="https://formspree.io/f/xqkroexample" method="POST">
+          <label class="grid gap-1">
+            <span class="text-sm text-white/70">Your email</span>
+            <input name="email" type="email" required class="bg-neutral-900 border border-neutral-800 rounded px-3 py-2" />
+          </label>
+          <label class="grid gap-1">
+            <span class="text-sm text-white/70">Message</span>
+            <textarea name="message" rows="5" required class="bg-neutral-900 border border-neutral-800 rounded px-3 py-2"></textarea>
+          </label>
+          <button data-cta="contact-send" class="inline-flex justify-center rounded bg-white text-neutral-900 px-4 py-2 font-semibold hover:bg-white/90">Send</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-neutral-800">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 text-sm text-white/70 flex items-center justify-between">
+      <p>© 2025 Gold Shore Labs. All rights reserved.</p>
+      <div class="flex gap-4">
+        <a class="hover:text-white" href="mailto:mail@goldshore.org">mail@goldshore.org</a>
+      </div>
     </div>
-  </section>
-
-<section id="projects" class="py-16 bg-white">
-  <div class="max-w-6xl mx-auto px-4">
-    <h3 class="text-2xl font-bold text-center mb-12">Featured Projects</h3>
-    <div class="grid md:grid-cols-3 gap-8 text-center">
-      <div class="p-6 bg-gray-100 rounded shadow">
-        <img src="/assets/images/shyborg-manual.jpg" alt="Field Manual" class="mb-4 mx-auto rounded">
-        <h4 class="font-semibold text-lg">Shyborg Survival Field Manual</h4>
-        <p class="text-sm text-gray-600">Symbolic ghostwriting project--AI meets mythic trauma recovery.</p>
-      </div>
-      <div class="p-6 bg-gray-100 rounded shadow">
-        <img src="/assets/images/fintech-app.jpg" alt="AI Fintech" class="mb-4 mx-auto rounded">
-        <h4 class="font-semibold text-lg">AI-Powered Fintech App</h4>
-        <p class="text-sm text-gray-600">Custom trading signal engine with segmentation and adaptive filters.</p>
-      </div>
-      <div class="p-6 bg-gray-100 rounded shadow">
-        <img src="/assets/images/multisite.jpg" alt="WordPress Multisite" class="mb-4 mx-auto rounded">
-        <h4 class="font-semibold text-lg">WP Multisite Integration</h4>
-        <p class="text-sm text-gray-600">Built and deployed WP plugins across multiple subdomains.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-  <!-- Tech Stack Tiles -->
-  <section class="py-12 bg-gray-50">
-    <div class="max-w-6xl mx-auto px-4 text-center">
-      <h2 class="text-3xl font-bold mb-8">Tech Stack</h2>
-      <div class="grid grid-cols-3 md:grid-cols-6 gap-6">
-        <img src="icons/html5.svg" class="h-12 mx-auto" alt="HTML5" />
-        <img src="icons/css3.svg" class="h-12 mx-auto" alt="CSS3" />
-        <img src="icons/javascript.svg" class="h-12 mx-auto" alt="JavaScript" />
-        <img src="icons/bootstrap.svg" class="h-12 mx-auto" alt="Bootstrap" />
-        <img src="icons/php.svg" class="h-12 mx-auto" alt="PHP" />
-        <img src="icons/python.svg" class="h-12 mx-auto" alt="Python" />
-      </div>
-    </div>
-  </section>
-
-<script>
-  var swiper = new Swiper(".mySwiper", {
-    loop: true,
-    autoplay: { delay: 3000 },
-    slidesPerView: 1,
-    spaceBetween: 20,
-  });
-</script>
-
-  <!-- Footer -->
-  <footer class="bg-white text-center py-6 text-sm text-gray-500">
-    &copy; 2025 Gold Shore Labs. All rights reserved.
   </footer>
 
+  <!-- Cloudflare Web Analytics (replace TOKEN) -->
+  <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon='{"token": "YOUR-CLOUDFLARE-TOKEN"}'></script>
+
+  <!-- App JS -->
+  <script src="/assets/js/main.js"></script>
 </body>
 </html>
-```html                                                                                                                                                      
-  <!-- Add OpenGraph and Twitter Card metadata -->
-  <meta property="og:title" content="Gold Shore Labs - Innovating with AI & Cybersecurity" />
-  <meta property="og:description" content="Discover cutting-edge solutions in AI, cybersecurity, and community-driven technology with Gold Shore Labs." />
-  <meta property="og:image" content="/assets/logo.png" />
-  <meta property="og:url" content="https://www.goldshorelabs.com" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Gold Shore Labs - Innovating  ```html
-<!-- Legal Disclaimer -->
-<section class="py-12 bg-white">
-  <div class="max-w-6xl mx-auto px-4 text-center">
-    <p class="text-sm text-gray-600">
-      Disclaimer: The Arm's Way barrier sleeve is not a substitute for standard infection control practices. Always use personal protective equipment as required. Consult healthcare guidelines for comprehensive protection practices.
-    </p>
-  </div>
-</section>
-
-<!-- SEO Metadata -->
-<meta name="description" content="Arm's Way offers a patented barrier sleeve designed to promote medical hygiene by blocking 99.9% of bacteria and viruses, ideal for hospitals and clinics." />
-<meta name="keywords" content="Medical hygiene, Infection control, Barrier sleeve, Hospital supply, Clinic safety" />
-<meta property="og:title" content="Arm's Way - Patented Barrier Sleeve for Infection Control" />
-<meta property="og:description" content="Promote hygiene with Arm's Way barrier sleeve, blocking 99.9% of bacteria/viruses. Essential for hospitals and doctors." />
-<meta property="og:image" content="https://armsway.com/assets/og-image.jpg" />
-<meta property="og:url" content="https://armsway.com" />
-<meta name="twitter:card" content="summary_large_image" />
-
-```
-
-### Commit Message Suggestion:
-"Added legal disclaimer, SEO metadata with OpenGraph and Twitter Card headers to ensure better online visibility and adherence to medical compliance guidelines."

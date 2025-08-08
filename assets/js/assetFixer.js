@@ -6,7 +6,7 @@ const ASSET_FOLDERS = [
   './assets/penrose/',
   './assets/ai/',
   './assets/icons/',
-  './public/images/',
+  './assets/img/',
 ];
 
 export function relocateMissingAsset(filename, targetDir = './assets/ai/') {
