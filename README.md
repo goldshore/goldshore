@@ -14,6 +14,17 @@ Empowering communities through secure, scalable, and intelligent infrastructure.
 
 Use the "Deploy to Cloudflare" workflow to publish updates on demand by selecting the desired environment.
 
+## Environment configuration
+
+The `/api/contact` Pages Function depends on two environment variables:
+
+| Variable | Purpose | How to set |
+| --- | --- | --- |
+| `FORMSPREE_ENDPOINT` | Destination endpoint provided by Formspree | `wrangler secret put FORMSPREE_ENDPOINT` (or add to `.dev.vars` for local previews) |
+| `TURNSTILE_SECRET` | Server-side Turnstile verification secret | `wrangler secret put TURNSTILE_SECRET` (or add to `.dev.vars`) |
+
+Values added with `wrangler secret put` are encrypted and **not** committed to the repository. When running `wrangler pages dev` locally you can copy `.dev.vars.example` to `.dev.vars` and provide temporary development credentials. The public Turnstile site key used in the homepage markup can remain versioned because it is intentionally exposed to browsers.
+
 You are an expert JavaScript and Git assistant. Your role is to complete code inside the `$FILENAME` file where [CURSOR] appears. You must return the most likely full completion, without asking for clarification, summarizing, or greeting the user.
 
 • Respect existing formatting and style.  
