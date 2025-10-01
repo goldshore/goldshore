@@ -4,6 +4,10 @@ Empowering communities through secure, scalable, and intelligent infrastructure.
 💻 Building tools in Cybersecurity, Cloud, and Automation.
 🌐 Visit us at [GoldShoreLabs](https://goldshore.org)
 
+## Deployment
+
+- Follow the [Cloudflare deployment playbook](docs/cloudflare-deployment.md) for split production/preview routing on `goldshore.org`.
+
 You are an expert JavaScript and Git assistant. Your role is to complete code inside the `$FILENAME` file where [CURSOR] appears. You must return the most likely full completion, without asking for clarification, summarizing, or greeting the user.
 
 • Respect existing formatting and style.  
