@@ -1,14 +1,44 @@
-const CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
+const ALLOWED_ORIGINS = new Set([
+  "https://goldshore.org",
+  "https://www.goldshore.org",
+  "https://goldshore-org.pages.dev",
+  "http://localhost:8788",
+]);
+
+const BASE_CORS_HEADERS = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-API-Key",
 };
 
-function jsonResponse(body, init = {}) {
+function resolveAllowedOrigin(request) {
+  const origin = request.headers.get("origin");
+  if (!origin) {
+    return null;
+  }
+
+  return ALLOWED_ORIGINS.has(origin) ? origin : null;
+}
+
+function createCorsHeaders(request) {
+  const headers = new Headers(BASE_CORS_HEADERS);
+  headers.append("Vary", "Origin");
+  const allowedOrigin = resolveAllowedOrigin(request);
+
+  if (allowedOrigin) {
+    headers.set("Access-Control-Allow-Origin", allowedOrigin);
+  }
+
+  return headers;
+}
+
+function jsonResponse(request, body, init = {}) {
   const headers = new Headers(init.headers || {});
-  for (const [key, value] of Object.entries(CORS_HEADERS)) {
+  const corsHeaders = createCorsHeaders(request);
+
+  for (const [key, value] of corsHeaders.entries()) {
     headers.set(key, value);
   }
+
   headers.set("content-type", "application/json");
 
   return new Response(JSON.stringify(body), {
@@ -35,14 +65,23 @@ function resolvePurpose(value) {
 
 async function handlePost(request, env) {
   if (!env.OPENAI_API_KEY) {
-    return jsonResponse({ error: "Missing OpenAI API key." }, { status: 500 });
+    return jsonResponse(request, { error: "Missing OpenAI API key." }, { status: 500 });
+  }
+
+  if (!env.GPT_PROXY_SECRET) {
+    return jsonResponse(request, { error: "Missing GPT proxy secret." }, { status: 500 });
+  }
+
+  const providedSecret = request.headers.get("x-api-key");
+  if (providedSecret !== env.GPT_PROXY_SECRET) {
+    return jsonResponse(request, { error: "Unauthorized." }, { status: 401 });
   }
 
   let payload;
   try {
     payload = await request.json();
   } catch (error) {
-    return jsonResponse({ error: "Invalid JSON body." }, { status: 400 });
+    return jsonResponse(request, { error: "Invalid JSON body." }, { status: 400 });
   }
 
   const {
@@ -55,7 +94,7 @@ async function handlePost(request, env) {
   } = payload || {};
 
   if (!Array.isArray(messages) && typeof prompt !== "string") {
-    return jsonResponse({
+    return jsonResponse(request, {
       error: "Request body must include either a 'messages' array or a 'prompt' string.",
     }, { status: 400 });
   }
@@ -102,22 +141,22 @@ async function handlePost(request, env) {
     try {
       data = JSON.parse(responseText);
     } catch (error) {
-      return jsonResponse({
+      return jsonResponse(request, {
         error: "Unexpected response from OpenAI API.",
         details: responseText,
       }, { status: 502 });
     }
 
     if (!response.ok) {
-      return jsonResponse({
+      return jsonResponse(request, {
         error: "OpenAI API request failed.",
         details: data,
       }, { status: response.status });
     }
 
-    return jsonResponse(data, { status: response.status });
+    return jsonResponse(request, data, { status: response.status });
   } catch (error) {
-    return jsonResponse({
+    return jsonResponse(request, {
       error: "Failed to contact OpenAI API.",
       details: error instanceof Error ? error.message : String(error),
     }, { status: 502 });
@@ -129,12 +168,12 @@ export default {
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
-        headers: CORS_HEADERS,
+        headers: createCorsHeaders(request),
       });
     }
 
     if (request.method !== "POST") {
-      return jsonResponse({ error: "Method not allowed." }, { status: 405 });
+      return jsonResponse(request, { error: "Method not allowed." }, { status: 405 });
     }
 
     return handlePost(request, env);

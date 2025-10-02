@@ -23,6 +23,7 @@ The `/api/contact` Pages Function depends on two environment variables:
 | `FORMSPREE_ENDPOINT` | Destination endpoint provided by Formspree | `wrangler secret put FORMSPREE_ENDPOINT` (or add to `.dev.vars` for local previews) |
 | `TURNSTILE_SECRET` | Server-side Turnstile verification secret | `wrangler secret put TURNSTILE_SECRET` (or add to `.dev.vars`) |
 | `OPENAI_API_KEY` | Authenticates calls to the `/api/gpt` handler | `wrangler secret put OPENAI_API_KEY` (or add to `.dev.vars`) |
+| `GPT_PROXY_SECRET` | Shared secret required by the `/api/gpt` handler | `wrangler secret put GPT_PROXY_SECRET` (or add to `.dev.vars`) |
 
 Values added with `wrangler secret put` are encrypted and **not** committed to the repository. When running `wrangler pages dev` locally you can copy `.dev.vars.example` to `.dev.vars` and provide temporary development credentials. The public Turnstile site key used in the homepage markup can remain versioned because it is intentionally exposed to browsers.
 
@@ -45,7 +46,23 @@ Example request payload:
 }
 ```
 
-Responses are returned verbatim from OpenAI's `/v1/chat/completions` endpoint. Be sure to configure `OPENAI_API_KEY` in each environment before deploying.
+Responses are returned verbatim from OpenAI's `/v1/chat/completions` endpoint. Be sure to configure both `OPENAI_API_KEY` and `GPT_PROXY_SECRET` in each environment before deploying. Clients must include the shared secret via an `x-api-key` header when calling the Worker:
+
+```js
+await fetch("/api/gpt", {
+  method: "POST",
+  headers: {
+    "content-type": "application/json",
+    "x-api-key": "your-shared-secret",
+  },
+  body: JSON.stringify({
+    purpose: "coding",
+    prompt: "Write a Python function that returns the factorial of n",
+  }),
+});
+```
+
+Requests missing the header (or using the wrong secret) are rejected with HTTP 401.
 
 You are an expert JavaScript and Git assistant. Your role is to complete code inside the `$FILENAME` file where [CURSOR] appears. You must return the most likely full completion, without asking for clarification, summarizing, or greeting the user.
 

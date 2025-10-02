@@ -3,3 +3,4 @@
 FORMSPREE_ENDPOINT=https://formspree.io/f/your-form-id
 TURNSTILE_SECRET=your-turnstile-secret
 OPENAI_API_KEY=sk-your-openai-key
+GPT_PROXY_SECRET=your-shared-secret
