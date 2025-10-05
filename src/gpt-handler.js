@@ -1,8 +1,30 @@
-const TOKEN_HEADER_NAME = "x-gpt-proxy-token";
+const TOKEN_HEADER_NAME = "x-api-key";
 const BASE_CORS_HEADERS = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-GPT-Proxy-Token",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-API-Key",
 };
+
+const encoder = new TextEncoder();
+
+function timingSafeEqual(a, b) {
+  if (typeof a !== "string" || typeof b !== "string") {
+    return false;
+  }
+
+  const encodedA = encoder.encode(a);
+  const encodedB = encoder.encode(b);
+
+  if (encodedA.length !== encodedB.length) {
+    return false;
+  }
+
+  let diff = 0;
+  for (let index = 0; index < encodedA.length; index += 1) {
+    diff |= encodedA[index] ^ encodedB[index];
+  }
+
+  return diff === 0;
+}
 
 function parseAllowedOrigins(env) {
   const raw = env?.GPT_ALLOWED_ORIGINS;
@@ -29,7 +51,7 @@ function resolveAllowedOrigin(request, env) {
 
   const normalizedOrigin = requestOrigin.trim();
   for (const allowed of allowedOrigins) {
-    if (allowed === "*" || allowed === normalizedOrigin) {
+    if (allowed === normalizedOrigin) {
       return normalizedOrigin;
     }
   }
@@ -84,9 +106,9 @@ async function handlePost(request, env, allowedOrigin) {
     return jsonResponse({ error: "Missing OpenAI API key." }, { status: 500 }, allowedOrigin);
   }
 
-  const expectedToken = env.GPT_PROXY_TOKEN;
+  const expectedToken = env.GPT_PROXY_SECRET;
   if (!expectedToken) {
-    return jsonResponse({ error: "Missing GPT proxy token." }, { status: 500 }, allowedOrigin);
+    return jsonResponse({ error: "Missing GPT proxy secret." }, { status: 500 }, allowedOrigin);
   }
 
   const providedToken = request.headers.get(TOKEN_HEADER_NAME);
@@ -94,7 +116,7 @@ async function handlePost(request, env, allowedOrigin) {
     return jsonResponse({ error: "Missing authentication token." }, { status: 401 }, allowedOrigin);
   }
 
-  if (providedToken !== expectedToken) {
+  if (!timingSafeEqual(providedToken, expectedToken)) {
     return jsonResponse({ error: "Invalid authentication token." }, { status: 403 }, allowedOrigin);
   }
 
