@@ -1,0 +1,15 @@
+{
+  "name": "goldshore-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "process:images": "node scripts/process-images.mjs"
+  },
+  "dependencies": {
+    "astro": "^4.10.2"
+  }
+}

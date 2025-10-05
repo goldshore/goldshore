@@ -1,0 +1,17 @@
+{
+  "name": "goldshore",
+  "private": true,
+  "version": "0.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "build:web": "npm --prefix apps/web run build"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.3",
+    "@cloudflare/workers-types": "^4.20240512.0"
+  }
+}

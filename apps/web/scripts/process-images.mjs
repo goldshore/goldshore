@@ -1,0 +1,32 @@
+import fs from 'fs';
+import path from 'path';
+import sharp from 'sharp';
+
+const srcDir = 'apps/web/public/images/raw';
+const outDir = 'apps/web/public/images/optimized';
+
+fs.mkdirSync(outDir, { recursive: true });
+
+const files = fs.readdirSync(srcDir, { withFileTypes: true });
+
+for (const file of files) {
+  if (!file.isFile()) continue;
+  const inputPath = path.join(srcDir, file.name);
+  if (!/\.(png|jpe?g)$/i.test(inputPath)) continue;
+  const base = path.parse(file.name).name;
+  const image = sharp(inputPath)
+    .modulate({ brightness: 0.95, saturation: 0.9 })
+    .composite([
+      {
+        input: Buffer.from([255, 255, 255, 230]),
+        raw: { width: 1, height: 1, channels: 4 },
+        tile: true,
+        blend: 'overlay'
+      }
+    ]);
+
+  await image.webp({ quality: 82 }).toFile(path.join(outDir, `${base}.webp`));
+  await image.avif({ quality: 60 }).toFile(path.join(outDir, `${base}.avif`));
+}
+
+console.log('Images processed →', outDir);
