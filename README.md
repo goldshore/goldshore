@@ -26,6 +26,8 @@ Key entry points:
 - `packages/db/schema.sql` — Cloudflare D1 schema for blog posts and store products.
 - `infra/scripts/*.sh` — Shell scripts that upsert required DNS records and ensure Cloudflare Access policies for `/admin`.
 
+For a deeper end-to-end playbook that covers design, accessibility, deployment, DNS, and Cloudflare configuration, see [GoldShore Web & Worker Implementation Guide](./GOLDSHORE_IMPLEMENTATION_GUIDE.md).
+
 ## Workflows
 
 | Workflow | Purpose | Trigger |
