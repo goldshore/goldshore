@@ -1,17 +1,17 @@
-# GoldShore platform
+# Gold Shore monorepo
 
-This repository hosts GoldShore's Worker router, Astro front-end, D1 schema, and infrastructure automation. The layout is organised as a lightweight monorepo so the Worker, web app, database schema, and supporting tooling can ship together through GitHub Actions.
+This repository follows the Gold Shore agent playbook: a lightweight monorepo that keeps the Astro site, Cloudflare Worker, and
+infrastructure scripts in one place so the CI agent can ship predictable deployments.
 
-## Repository layout
+## Layout
 
 ```
 goldshore/
 ├─ apps/
-│  ├─ api-router/          # Cloudflare Worker entry point
-│  └─ web/                 # Astro site, vanilla CSS theme
+│  ├─ api-router/      # Cloudflare Worker router
+│  └─ web/             # Astro marketing site
 ├─ packages/
-│  ├─ db/                  # D1 schema & Drizzle entry point (future)
-│  └─ ai-maint/            # Reserved for AI maintenance helpers
+│  └─ image-tools/     # Sharp image optimisation script
 ├─ infra/
 │  └─ scripts/             # DNS & Access automation
 ├─ .github/workflows/      # Deploy / maintenance CI
@@ -20,34 +20,33 @@ goldshore/
 └─ package.json            # npm workspaces + shared tooling
 ```
 
-Key entry points:
+### Key files
 
-- `apps/api-router/src/router.ts` — Worker proxy that selects the correct asset origin per host, applies strict CORS, and passes the request through without mutating CSS or binary assets.
-- `apps/web/src` — Astro site with a shared theme (`styles/theme.css`) and starter homepage content (`pages/index.astro`). Additional routes (blog, store, admin, etc.) can be added here using Astro collections or standard `.astro` pages.
-- `packages/db/schema.sql` — Cloudflare D1 schema for blog posts and store products.
-- `infra/scripts/*.sh` — Shell scripts that upsert required DNS records and ensure Cloudflare Access policies for `/admin`.
+- `apps/web/src/styles/theme.css` — colour tokens and shared UI utilities.
+- `apps/web/src/components/Header.astro` — responsive header with desktop nav and mobile affordance.
+- `apps/web/src/components/Hero.astro` — animated “glinting” skyline hero that respects reduced motion preferences.
+- `apps/api-router/src/router.ts` — Worker proxy that selects the correct Cloudflare Pages origin per hostname.
+- `infra/scripts/upsert-goldshore-dns.sh` — idempotent DNS upsert script for `goldshore.org` and preview/dev subdomains.
 
-## Workflows
+For a deeper end-to-end deployment reference, read [GoldShore Implementation Guide](./GOLDSHORE_IMPLEMENTATION_GUIDE.md).
 
-| Workflow | Purpose | Trigger |
-| --- | --- | --- |
-| `deploy.yml` | Builds the Astro site, deploys the Worker to `production`, `preview`, and `dev`, refreshes Access, and syncs DNS. | Push to `main` (selected paths) or manual run |
-| `ai_maint.yml` | Runs linting, Lighthouse smoke tests, and guarded AI copy suggestions that open PRs. | Nightly (05:00 UTC) or manual run |
-| `sync_dns.yml` | Manually replays the DNS upsert script. | Manual run |
+## Scripts
 
-## Prerequisites
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the Astro dev server from `apps/web`. |
+| `npm run build` | Optimise images then build the production site. |
+| `npm run deploy:prod` | Deploy the Worker to the production environment. |
+| `npm run deploy:preview` | Deploy the Worker to the preview environment. |
+| `npm run deploy:dev` | Deploy the Worker to the dev environment. |
+| `npm run qa` | Execute the local QA helper defined in `.github/workflows/local-qa.mjs`. |
 
-Configure the following repository secrets under **Settings → Secrets and variables → Actions**:
+## GitHub Actions
 
-- `CF_ACCOUNT_ID`
-- `CF_API_TOKEN`
-- `CF_SECRET_STORE_ID`
-- `OPENAI_API_KEY`
-- `OPENAI_PROJECT_ID`
+- `.github/workflows/deploy.yml` builds the site, deploys the Worker to production, and upserts DNS on pushes to `main` or manual runs.
+- `.github/workflows/qa.yml` enforces Lighthouse performance/accessibility/SEO scores ≥ 0.90 on pull requests.
 
-These secrets are consumed by the Worker (via the Secrets Store binding) and GitHub Actions. The deploy workflow also expects `jq` (available on the GitHub Actions runner).
-
-## Local development
+## Secrets required in CI
 
 1. Install dependencies:
    ```bash
@@ -64,15 +63,14 @@ These secrets are consumed by the Worker (via the Secrets Store binding) and Git
    npx wrangler dev --config wrangler.worker.toml
    ```
 
-The image optimisation script expects source assets in `apps/web/public/images/raw` and emits AVIF/WEBP variants into `apps/web/public/images/optimized`.
+- `CF_API_TOKEN`
+- `CF_ACCOUNT_ID`
 
-## Database setup
+If either secret is missing the deploy workflow will fail early, prompting the operator to add them before proceeding.
 
 Provision a Cloudflare D1 database named `goldshore-db`. When you're ready to wire it to the Worker, add a `[[d1_databases]]` block to `wrangler.worker.toml` (an example is shown below) and replace `DATABASE_ID` with the value from the Cloudflare dashboard. Initial seed tables can be created by running:
 
-```bash
-wrangler d1 execute goldshore-db --file=packages/db/schema.sql
-```
+The Worker expects Cloudflare Pages projects mapped to:
 
 Example Worker binding block:
 
@@ -85,7 +83,8 @@ database_id = "DATABASE_ID"
 
 Future Drizzle integration can live in `packages/db` alongside the schema.
 
-## Notes
+The DNS upsert script keeps these hostnames pointed at the correct Pages project using proxied CNAME records for:
+`goldshore.org`, `www.goldshore.org`, `preview.goldshore.org`, and `dev.goldshore.org`.
 
 - The Worker deploy relies on the Cloudflare Secrets Store; be sure the store already contains the mapped secrets (`OPENAI_API_KEY`, `OPENAI_PROJECT_ID`, `CF_API_TOKEN`).
 - Worker-related commands (including the GitHub Actions deploy workflow) should pass `--config wrangler.worker.toml` so they continue to load bindings and routes, while Cloudflare Pages reads the root `wrangler.toml` for its build output directory.
