@@ -21,12 +21,51 @@ if [[ -z "${CF_ZONE_ID:-}" ]]; then
   exit 1
 fi
 
+remove_conflicting_records() {
+  local zone_id=$1
+  local name=$2
+  local desired_type=$3
+
+  local conflict_types=()
+  case "$desired_type" in
+    CNAME)
+      conflict_types=("A" "AAAA")
+      ;;
+    A|AAAA)
+      conflict_types=("CNAME")
+      ;;
+    *)
+      return
+      ;;
+  esac
+
+  local conflicts_json
+  conflicts_json=$(curl -sS -X GET "$API/zones/$zone_id/dns_records?name=$name" \
+    -H "Authorization: Bearer $CF_API_TOKEN" \
+    -H "Content-Type: application/json")
+
+  for conflict_type in "${conflict_types[@]}"; do
+    local conflict_ids
+    conflict_ids=$(echo "$conflicts_json" | jq -r --arg type "$conflict_type" '(.result // [])[]? | select(.type == $type) | .id')
+
+    while IFS= read -r id; do
+      [[ -z "$id" || "$id" == "null" ]] && continue
+      curl -sS -X DELETE "$API/zones/$zone_id/dns_records/$id" \
+        -H "Authorization: Bearer $CF_API_TOKEN" \
+        -H "Content-Type: application/json" >/dev/null
+      echo "Removed conflicting $conflict_type record for $name"
+    done <<<"$conflict_ids"
+  done
+}
+
 upsert_record() {
   local zone_id=$1
   local name=$2
   local type=$3
   local content=$4
   local proxied=$5
+
+  remove_conflicting_records "$zone_id" "$name" "$type"
 
   local existing_id
   existing_id=$(curl -sS -X GET "$API/zones/$zone_id/dns_records?type=$type&name=$name" \
@@ -58,16 +97,27 @@ upsert_record() {
 main() {
   local zone_id=$1
 
-  local hosts=("$ZONE_NAME" "www.$ZONE_NAME" "preview.$ZONE_NAME" "dev.$ZONE_NAME")
   local ipv4_target=${IPv4_TARGET:-192.0.2.1}
-  local ipv6_target=${IPv6_TARGET:-100::}
+  local ipv6_target=${IPv6_TARGET:-}
 
-  for host in "${hosts[@]}"; do
-    upsert_record "$zone_id" "$host" "A" "$ipv4_target" true
+  local -a records=(
+    "$ZONE_NAME|A|$ipv4_target|true"
+  )
 
-    if [[ -n "$ipv6_target" ]]; then
-      upsert_record "$zone_id" "$host" "AAAA" "$ipv6_target" true
-    fi
+  if [[ -n "$ipv6_target" ]]; then
+    records+=("$ZONE_NAME|AAAA|$ipv6_target|true")
+  fi
+
+  records+=(
+    "www.$ZONE_NAME|CNAME|$ZONE_NAME|true"
+    "preview.$ZONE_NAME|CNAME|$ZONE_NAME|true"
+    "dev.$ZONE_NAME|CNAME|$ZONE_NAME|true"
+  )
+
+  local record
+  for record in "${records[@]}"; do
+    IFS='|' read -r name type content proxied <<<"$record"
+    upsert_record "$zone_id" "$name" "$type" "$content" "$proxied"
   done
 
   echo "DNS synchronized for ${ZONE_NAME}."
