@@ -7,21 +7,14 @@ const outDir = 'apps/web/public/images/optimized';
 
 fs.mkdirSync(outDir, { recursive: true });
 
-const files = fs.readdirSync(srcDir, { withFileTypes: true });
+for (const entry of fs.readdirSync(srcDir, { withFileTypes: true })) {
+  if (!entry.isFile()) continue;
 
-for (const file of files) {
-  if (!file.isFile()) continue;
-  const inputPath = path.join(srcDir, file.name);
+  const inputPath = path.join(srcDir, entry.name);
   if (!/\.(png|jpe?g)$/i.test(inputPath)) continue;
-  const base = path.parse(file.name).name;
-  const image = sharp(inputPath)
-for (const entry of fs.readdirSync(srcDir)) {
-  const absolute = path.join(srcDir, entry);
-  if (!fs.statSync(absolute).isFile()) continue;
-  if (!/\.(png|jpe?g)$/i.test(entry)) continue;
 
-  const base = path.parse(entry).name;
-  const pipeline = sharp(absolute)
+  const base = path.parse(entry.name).name;
+  const pipeline = sharp(inputPath)
     .modulate({ brightness: 0.95, saturation: 0.9 })
     .composite([
       {
@@ -32,10 +25,10 @@ for (const entry of fs.readdirSync(srcDir)) {
       }
     ]);
 
-  await image.webp({ quality: 82 }).toFile(path.join(outDir, `${base}.webp`));
-  await image.avif({ quality: 60 }).toFile(path.join(outDir, `${base}.avif`));
-  await pipeline.webp({ quality: 82 }).toFile(path.join(outDir, `${base}.webp`));
-  await pipeline.avif({ quality: 60 }).toFile(path.join(outDir, `${base}.avif`));
+  await Promise.all([
+    pipeline.clone().webp({ quality: 82 }).toFile(path.join(outDir, `${base}.webp`)),
+    pipeline.clone().avif({ quality: 60 }).toFile(path.join(outDir, `${base}.avif`))
+  ]);
 }
 
 console.log('Images processed →', outDir);
