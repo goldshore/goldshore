@@ -1,4 +1,4 @@
-name: Deploy Gold Shore platform
+name: Deploy Gold Shore Store platform
 
 on:
   push:
