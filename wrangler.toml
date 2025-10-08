@@ -16,6 +16,16 @@ GPT_ALLOWED_ORIGINS = "https://goldshore.org, https://www.goldshore.org, https:/
 
 [env.production]
 routes = [
+  # Ensure preview and dev hostnames stay mapped to their environment-specific workers
+  { pattern = "preview.goldshore.org/*", zone_name = "goldshore.org", script = "router-preview" },
+  { pattern = "dev.goldshore.org/*", zone_name = "goldshore.org", script = "router-dev" },
+  { pattern = "preview.gearswipe.com/*", zone_name = "gearswipe.com", script = "router-preview" },
+  { pattern = "dev.gearswipe.com/*", zone_name = "gearswipe.com", script = "router-dev" },
+  { pattern = "preview.armsway.com/*", zone_name = "armsway.com", script = "router-preview" },
+  { pattern = "dev.armsway.com/*", zone_name = "armsway.com", script = "router-dev" },
+  { pattern = "preview.banproof.com/*", zone_name = "banproof.com", script = "router-preview" },
+  { pattern = "dev.banproof.com/*", zone_name = "banproof.com", script = "router-dev" },
+
   { pattern = "goldshore.org/*", zone_name = "goldshore.org" },
   { pattern = "*.goldshore.org/*", zone_name = "goldshore.org" },
   { pattern = "gearswipe.com/*", zone_name = "gearswipe.com" },
