@@ -37,9 +37,14 @@ if (navToggle && mobileMenu) {
 document.addEventListener('DOMContentLoaded', () => {
   const el = document.querySelector('.hero-swiper');
   if (el && window.Swiper) {
+    let reduceMotion = false;
+    if (typeof window.matchMedia === 'function') {
+      reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+
     new Swiper(el, {
-      loop: true,
-      autoplay: { delay: 4000 },
+      loop: !reduceMotion,
+      autoplay: reduceMotion ? false : { delay: 4000 },
       pagination: { el: '.swiper-pagination', clickable: true }
     });
   }
@@ -72,9 +77,18 @@ document.querySelectorAll('a[href^="http"]').forEach(a => {
 });
 
 // Contact form submit
-const contactForm = document.getElementById('contactForm');
+const contactForm = document.getElementById('primaryContactForm');
 if (contactForm) {
   contactForm.addEventListener('submit', () => {
     track('contact_submit', {});
   });
 }
+
+window.addEventListener('contact:success', (event) => {
+  const detail = event && event.detail ? event.detail : {};
+  track('contact_submit_success', {
+    form_id: detail.formId || 'primaryContactForm',
+    transport_type: detail.transportType || 'redirect'
+  });
+});
+
