@@ -26,6 +26,9 @@ APP_NAME = "GoldShore"
 binding = "DB"
 database_name = "goldshore-db"
 database_id = "REPLACE_WITH_D1_ID"
+PRODUCTION_ASSETS = "https://goldshore-org.pages.dev"
+PREVIEW_ASSETS = "https://goldshore-org-preview.pages.dev"
+DEV_ASSETS = "https://goldshore-org-dev.pages.dev"
 
 [env.production]
 routes = [
