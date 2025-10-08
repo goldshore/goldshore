@@ -9,6 +9,10 @@ PRODUCTION_ASSETS = "https://goldshore-org.pages.dev"
 PREVIEW_ASSETS = "https://goldshore-org-preview.pages.dev"
 DEV_ASSETS = "https://goldshore-org-dev.pages.dev"
 
+# Secrets such as FORMSPREE_ENDPOINT, TURNSTILE_SECRET, OPENAI_API_KEY, and
+# GPT_PROXY_SECRET are provided via
+# `wrangler secret put …` or `.dev.vars` in local development.
+
 [env.production]
 name = "goldshore-production"
 routes = [

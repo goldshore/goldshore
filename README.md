@@ -19,6 +19,12 @@ and streams the result back to the client.
 Set the `OPENAI_API_KEY` secret in each Worker environment so the GPT handler
 can authenticate with OpenAI:
 
+| Variable | Purpose | How to set |
+| --- | --- | --- |
+| `FORMSPREE_ENDPOINT` | Destination endpoint provided by Formspree | `wrangler secret put FORMSPREE_ENDPOINT` (or add to `.dev.vars` for local previews) |
+| `TURNSTILE_SECRET` | Server-side Turnstile verification secret | `wrangler secret put TURNSTILE_SECRET` (or add to `.dev.vars`) |
+| `OPENAI_API_KEY` | Authenticates calls to the `/api/gpt` handler | `wrangler secret put OPENAI_API_KEY` (or add to `.dev.vars`) |
+| `GPT_PROXY_SECRET` | Shared secret required by the `/api/gpt` handler | `wrangler secret put GPT_PROXY_SECRET` (or add to `.dev.vars`) |
 ```bash
 wrangler secret put OPENAI_API_KEY
 ```
@@ -27,6 +33,13 @@ For CI/CD pipelines, use the equivalent secret management command (for example
 `npx wrangler secret put`, Cloudflare Dashboard > Worker > Settings > Secrets,
 or the GitHub Action `cloudflare/wrangler-action` `secrets` input).
 
+### Where to store KV-style configuration
+
+- **Secrets and API keys**: use Cloudflare's encrypted secrets store via `wrangler secret put <NAME>` for each environment. These values are only visible within Cloudflare and to the Worker at runtime. For local development, copy `.dev.vars.example` to `.dev.vars` (already ignored by Git) and fill in throwaway credentials.
+- **Worker KV data**: if you need persistent key/value configuration, define a KV namespace in `wrangler.toml` (under `kv_namespaces`) and populate it with `wrangler kv:key put`. The namespace contents stay inside Cloudflare's infrastructure, so nothing sensitive is committed to the repo.
+- **CI/CD pipelines**: inject the same secrets and KV namespace identifiers through your build provider's secret manager (for example GitHub Actions' encrypted secrets) so automated deploys can bind them without revealing the values in logs or commits.
+
+### GPT handler API
 ### Supported models
 
 The handler currently supports the following OpenAI model identifiers:
@@ -54,6 +67,23 @@ Content-Type: application/json
 }
 ```
 
+Responses are returned verbatim from OpenAI's `/v1/chat/completions` endpoint. Be sure to configure both `OPENAI_API_KEY` and `GPT_PROXY_SECRET` in each environment before deploying. Clients must include the shared secret via an `x-api-key` header when calling the Worker:
+
+```js
+await fetch("/api/gpt", {
+  method: "POST",
+  headers: {
+    "content-type": "application/json",
+    "x-api-key": "your-shared-secret",
+  },
+  body: JSON.stringify({
+    purpose: "coding",
+    prompt: "Write a Python function that returns the factorial of n",
+  }),
+});
+```
+
+Requests missing the header (or using the wrong secret) are rejected with HTTP 401.
 ### Example response
 
 ```json

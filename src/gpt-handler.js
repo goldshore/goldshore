@@ -1,3 +1,44 @@
+const ALLOWED_ORIGINS = new Set([
+  "https://goldshore.org",
+  "https://www.goldshore.org",
+  "https://goldshore-org.pages.dev",
+  "http://localhost:8788",
+]);
+
+const BASE_CORS_HEADERS = {
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-API-Key",
+};
+
+function resolveAllowedOrigin(request) {
+  const origin = request.headers.get("origin");
+  if (!origin) {
+    return null;
+  }
+
+  return ALLOWED_ORIGINS.has(origin) ? origin : null;
+}
+
+function createCorsHeaders(request) {
+  const headers = new Headers(BASE_CORS_HEADERS);
+  headers.append("Vary", "Origin");
+  const allowedOrigin = resolveAllowedOrigin(request);
+
+  if (allowedOrigin) {
+    headers.set("Access-Control-Allow-Origin", allowedOrigin);
+  }
+
+  return headers;
+}
+
+function jsonResponse(request, body, init = {}) {
+  const headers = new Headers(init.headers || {});
+  const corsHeaders = createCorsHeaders(request);
+
+  for (const [key, value] of corsHeaders.entries()) {
+    headers.set(key, value);
+  }
+
 const BASE_CORS_HEADERS = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
@@ -85,6 +126,18 @@ function resolveAllowedOrigin(request, env) {
   return { ok: true, origin: originHeader };
 }
 
+async function handlePost(request, env) {
+  if (!env.OPENAI_API_KEY) {
+    return jsonResponse(request, { error: "Missing OpenAI API key." }, { status: 500 });
+  }
+
+  if (!env.GPT_PROXY_SECRET) {
+    return jsonResponse(request, { error: "Missing GPT proxy secret." }, { status: 500 });
+  }
+
+  const providedSecret = request.headers.get("x-api-key");
+  if (providedSecret !== env.GPT_PROXY_SECRET) {
+    return jsonResponse(request, { error: "Unauthorized." }, { status: 401 });
 function requireProxyToken(env) {
   const token = env.GPT_PROXY_TOKEN ?? env.GPT_ACCESS_TOKEN ?? null;
   if (!token) {
@@ -97,6 +150,11 @@ function requireProxyToken(env) {
   return { ok: true, token };
 }
 
+  let payload;
+  try {
+    payload = await request.json();
+  } catch (error) {
+    return jsonResponse(request, { error: "Invalid JSON body." }, { status: 400 });
 function validateAuthorization(request, env) {
   const tokenResult = requireProxyToken(env);
   if (!tokenResult.ok) {
@@ -191,6 +249,10 @@ function buildChatCompletionPayload(payload) {
 
   const { model = DEFAULT_MODEL, messages, prompt, ...rest } = payload;
 
+  if (!Array.isArray(messages) && typeof prompt !== "string") {
+    return jsonResponse(request, {
+      error: "Request body must include either a 'messages' array or a 'prompt' string.",
+    }, { status: 400 });
   if ((!Array.isArray(messages) || messages.length === 0) && typeof prompt !== "string") {
     throw new Error("Provide either a non-empty 'messages' array or a 'prompt' string.");
   }
@@ -262,6 +324,25 @@ async function handlePost(request, env, origin) {
     try {
       data = JSON.parse(text);
     } catch (error) {
+      return jsonResponse(request, {
+        error: "Unexpected response from OpenAI API.",
+        details: responseText,
+      }, { status: 502 });
+    }
+
+    if (!response.ok) {
+      return jsonResponse(request, {
+        error: "OpenAI API request failed.",
+        details: data,
+      }, { status: response.status });
+    }
+
+    return jsonResponse(request, data, { status: response.status });
+  } catch (error) {
+    return jsonResponse(request, {
+      error: "Failed to contact OpenAI API.",
+      details: error instanceof Error ? error.message : String(error),
+    }, { status: 502 });
       return errorResponse("Unexpected response from OpenAI API.", 502, text, origin);
     }
 
@@ -301,11 +382,13 @@ export default {
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
+        headers: createCorsHeaders(request),
         headers: withCorsHeaders(origin),
       });
     }
 
     if (request.method !== "POST") {
+      return jsonResponse(request, { error: "Method not allowed." }, { status: 405 });
       return errorResponse("Method not allowed.", 405, undefined, origin);
     }
 
