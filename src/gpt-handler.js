@@ -38,6 +38,18 @@ function parseAllowedOrigins(env) {
     .filter(Boolean);
 }
 
+function resolveAllowedOrigin(requestOrigin, allowedOrigins) {
+  if (typeof requestOrigin !== "string") {
+    return null;
+  }
+
+  const normalizedOrigin = requestOrigin.trim();
+  if (normalizedOrigin === "") {
+    return null;
+  }
+
+  if (!Array.isArray(allowedOrigins) || allowedOrigins.length === 0) {
+    return null;
 function buildCorsHeaders(origin) {
   const headers = new Headers();
 
@@ -46,7 +58,6 @@ function buildCorsHeaders(origin) {
     headers.set("Vary", "Origin");
   }
 
-  const normalizedOrigin = requestOrigin.trim();
   for (const allowed of allowedOrigins) {
     if (allowed === normalizedOrigin) {
       return normalizedOrigin;
@@ -360,6 +371,19 @@ async function handlePost(request, env, origin) {
 
 export default {
   async fetch(request, env) {
+    const requestOriginHeader = request.headers.get("Origin");
+    const allowedOrigins = parseAllowedOrigins(env);
+    const allowedOrigin = resolveAllowedOrigin(requestOriginHeader, allowedOrigins);
+    const hasAllowedOriginsConfigured = allowedOrigins.length > 0;
+    const normalizedRequestOrigin =
+      typeof requestOriginHeader === "string" ? requestOriginHeader.trim() : "";
+
+    if (hasAllowedOriginsConfigured && normalizedRequestOrigin && !allowedOrigin) {
+      return jsonResponse(
+        { error: "Origin not allowed." },
+        { status: 403 },
+        normalizedRequestOrigin,
+      );
     const { origin, errorResponse } = validateOrigin(request, env);
 
     if (errorResponse) {

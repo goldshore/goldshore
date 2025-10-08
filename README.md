@@ -72,6 +72,7 @@ Content-Type: application/json
 }
 ```
 
+Requests must include an `X-GPT-Proxy-Token` header whose value matches the `GPT_PROXY_TOKEN` secret; requests missing or presenting the wrong token are rejected before reaching OpenAI. Requests from origins outside `GPT_ALLOWED_ORIGINS` are short-circuited with `403 Forbidden` before the proxy ever talks to OpenAI, ensuring non-whitelisted sites cannot piggyback on the proxy.
 Requests must include an `X-API-Key` header whose value matches the `GPT_PROXY_SECRET` secret; requests missing or presenting the wrong token are rejected before reaching OpenAI. Browsers will only receive a permissive CORS header when their `Origin` appears in `GPT_ALLOWED_ORIGINS`, ensuring non-whitelisted sites cannot piggyback on the proxy.
 Requests must include an `X-GPT-Proxy-Token` header whose value matches the `GPT_PROXY_TOKEN` secret; requests missing or presenting the wrong token are rejected before reaching OpenAI. Browsers will only receive a permissive CORS header when their `Origin` appears in `GPT_ALLOWED_ORIGINS`, ensuring non-whitelisted sites cannot piggyback on the proxy. When hitting the authenticated Worker hostname (`goldshore-org.admin-77d.workers.dev`), Cloudflare injects a `Cf-Access-Jwt-Assertion` header after the user completes Access authentication—calls without a valid JWT fail with `401`/`403` responses before token verification or OpenAI proxying occurs.
 
