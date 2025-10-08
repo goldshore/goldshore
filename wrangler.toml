@@ -1,32 +1,29 @@
-name = "router"
-account_id = "<your_account_id>"
-main = "src/router.js"
-compatibility_date = "2025-06-30"
+name = "goldshore"
+main = "apps/api-router/src/router.ts"
+compatibility_date = "2025-10-05"
+workers_dev = false
 
 [vars]
-UPSTREAM_PROTOCOL = "https"
-CACHE_TTL = "300"
-PRODUCTION_ORIGIN = "https://goldshore-org.pages.dev"
-
-[env.preview]
-workers_dev = true
-
-[env.preview.vars]
-ENVIRONMENT = "preview"
-PREVIEW_ORIGIN = "https://goldshore-org.pages.dev"
+APP_NAME = "GoldShore"
+PRODUCTION_ASSETS = "https://goldshore-org.pages.dev"
+PREVIEW_ASSETS = "https://goldshore-org-preview.pages.dev"
+DEV_ASSETS = "https://goldshore-org-dev.pages.dev"
 
 [env.production]
-zone_name = "goldshore.org"
+name = "goldshore-production"
 routes = [
-  "goldshore.org/*",
-  "www.goldshore.org/*"
+  { pattern = "goldshore.org/*", zone_name = "goldshore.org" },
+  { pattern = "www.goldshore.org/*", zone_name = "goldshore.org" }
 ]
 
-[env.production.vars]
-ENVIRONMENT = "production"
-ALLOWED_HOSTNAMES = "goldshore.org,www.goldshore.org"
-CANONICAL_HOSTNAME = "goldshore.org"
+[env.preview]
+name = "goldshore-preview"
+routes = [
+  { pattern = "preview.goldshore.org/*", zone_name = "goldshore.org" }
+]
 
-[[analytics_engine_datasets]]
-binding = "GOLD_ANALYTICS"
-dataset = "goldshore-events"
+[env.dev]
+name = "goldshore-dev"
+routes = [
+  { pattern = "dev.goldshore.org/*", zone_name = "goldshore.org" }
+]

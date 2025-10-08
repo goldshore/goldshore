@@ -1,6 +1,7 @@
 [build]
-command = "echo 'Static site – skipping build'"
-publish = "."
+  command = "echo \"Skipping build; static assets already committed\""
+  publish = "."
+  functions = "functions"
 
 [build.environment]
-NODE_VERSION = "18"
+  NODE_VERSION = "18"
