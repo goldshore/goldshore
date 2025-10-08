@@ -2,7 +2,6 @@ const TOKEN_HEADER_NAME = "x-api-key";
 const BASE_CORS_HEADERS = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization, X-GPT-Proxy-Token, CF-Access-Jwt-Assertion",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-API-Key",
 };
 const DEFAULT_ALLOWED_HEADERS = "Content-Type, Authorization";
 const DEFAULT_ALLOWED_METHODS = "POST, OPTIONS";
