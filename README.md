@@ -316,6 +316,8 @@ For a deeper end-to-end playbook that covers design, accessibility, deployment, 
 | `ai_maint.yml` | Runs linting, Lighthouse smoke tests, and guarded AI copy suggestions that open PRs. | Nightly (05:00 UTC) or manual run |
 | `sync_dns.yml` | Manually replays the DNS upsert script. | Manual run |
 
+See [Cloudflare Workflows integration](./docs/cloudflare-workflows.md) for extending these automations with Cloudflare's workflow orchestration platform.
+
 | Command | Description |
 | --- | --- |
 | `npm run dev` | Start the Astro dev server from `apps/web`. |
