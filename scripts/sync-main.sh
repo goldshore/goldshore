@@ -70,8 +70,21 @@ fi
 echo "Fetching $REMOTE/$BRANCH" >&2
 git fetch "$REMOTE" "$BRANCH"
 
-echo "Fast-forwarding $BRANCH" >&2
-git merge --ff-only "$REMOTE/$BRANCH"
+read -r REMOTE_AHEAD LOCAL_AHEAD < <(git rev-list --left-right --count "$REMOTE/$BRANCH"...HEAD)
+
+if (( REMOTE_AHEAD > 0 && LOCAL_AHEAD > 0 )); then
+  echo "Error: $BRANCH has diverged from $REMOTE/$BRANCH. Please resolve manually." >&2
+  exit 1
+fi
+
+if (( REMOTE_AHEAD > 0 )); then
+  echo "Fast-forwarding $BRANCH" >&2
+  git merge --ff-only "$REMOTE/$BRANCH"
+elif (( LOCAL_AHEAD > 0 )); then
+  echo "$BRANCH is ahead of $REMOTE/$BRANCH by $LOCAL_AHEAD commit(s); skipping fast-forward" >&2
+else
+  echo "$BRANCH is already up to date with $REMOTE/$BRANCH" >&2
+fi
 
 if [[ "$PUSH" == "true" ]]; then
   echo "Pushing $BRANCH to $REMOTE" >&2
