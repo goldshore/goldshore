@@ -55,9 +55,28 @@ export async function onRequestPost({ request, env }) {
     }
 
     const redirectRaw = form.get('_redirect');
-    const redirect = typeof redirectRaw === 'string' && redirectRaw.startsWith('/')
-      ? redirectRaw
-      : '/#contact-success';
+    let redirect = '/#contact-success';
+
+    if (typeof redirectRaw === 'string') {
+      const redirectCandidate = redirectRaw.trim();
+
+      if (redirectCandidate) {
+        try {
+          const requestUrl = new URL(request.url);
+          const redirectUrl = new URL(redirectCandidate, requestUrl);
+
+          if (
+            redirectUrl.origin === requestUrl.origin &&
+            redirectUrl.pathname.startsWith('/') &&
+            !redirectCandidate.startsWith('//')
+          ) {
+            redirect = `${redirectUrl.pathname}${redirectUrl.search}${redirectUrl.hash}` || '/';
+          }
+        } catch (_) {
+          // fall back to default redirect
+        }
+      }
+    }
 
     return Response.redirect(redirect, 303);
   } catch (err) {
