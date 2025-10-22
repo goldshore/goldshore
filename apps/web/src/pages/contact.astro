@@ -9,6 +9,7 @@ const meta = {
 };
 
 const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+const contactScript = await import("../scripts/contactSuccess.ts?url");
 ---
 <BaseLayout {...meta}>
   <h1 class="section-title">Let’s build momentum</h1>
@@ -16,6 +17,23 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
     Share your focus area and timeline. We’ll align on scope within one business day and route you to the right operator.
   </p>
 
+  <form
+    class="card contact-form"
+    action="/api/contact"
+    method="POST"
+  >
+    <input type="hidden" name="_redirect" value="/contact#contact-success" />
+    <div>
+      <label for="name">Name</label>
+      <input id="name" name="name" type="text" required placeholder="Ada Lovelace" class="contact-field" />
+    </div>
+    <div>
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required placeholder="you@example.com" class="contact-field" />
+    </div>
+    <div>
+      <label for="focus">What do you need?</label>
+      <select id="focus" name="focus" required class="contact-field">
   <form class="card contact-form" action="/api/contact" method="POST">
     <input type="hidden" name="_redirect" value="/contact#contact-success" />
     <div>
@@ -62,9 +80,9 @@ const turnstileSiteKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
   {turnstileSiteKey && (
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   )}
-  <script type="module" src={Astro.resolve("../scripts/contact-success.ts")}></script>
+  <script type="module" src={contactScript.default}></script>
 
-  <section class="section-spacing">
+  <section class="contact-availability">
     <h2 class="section-title">Availability</h2>
     <p class="section-subtitle">We host strategy calls on Tuesdays and Thursdays. Urgent reputation work is on-call 24/7.</p>
     <div class="card">

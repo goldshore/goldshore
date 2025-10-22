@@ -8,6 +8,7 @@ const navLinks = [
   { href: "/services", label: "Services" },
   { href: "/contact", label: "Contact" },
 ];
+const headerScript = await import("../scripts/headerMenu.ts?url");
 ---
 
 <header class="container header" role="banner">
@@ -46,5 +47,6 @@ const navLinks = [
     </nav>
   </div>
 </header>
+<script type="module" src={headerScript.default}></script>
 
 <script type="module" src={Astro.resolve("./header-menu.ts")}></script>

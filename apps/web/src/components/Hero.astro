@@ -1,8 +1,8 @@
 ---
 import "./Hero.css";
-
 const { title = "", kicker = "" } = Astro.props as { title?: string; kicker?: string };
 ---
+
 <section class="hero">
   <svg class="bg" viewBox="0 0 1600 900" aria-hidden="true" focusable="false">
     <defs>
@@ -48,8 +48,8 @@ const { title = "", kicker = "" } = Astro.props as { title?: string; kicker?: st
   </svg>
 
   <div class="content container">
-    {kicker && <p class="tag hero-kicker">{kicker}</p>}
-    <h1 class="glow hero-title">{title}</h1>
+    {kicker && <p class="tag hero__kicker">{kicker}</p>}
+    <h1 class="glow hero__title">{title}</h1>
     <slot />
   </div>
 </section>
