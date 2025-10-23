@@ -38,4 +38,4 @@ jobs:
         run: npx wrangler deploy --config wrangler.worker.toml --env=production
 
       - name: Sync DNS records
-        run: bash infra/scripts/upsert-goldshore-dns.sh
+        run: ./infra/scripts/upsert-goldshore-dns.sh
