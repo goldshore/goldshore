@@ -256,7 +256,7 @@ function buildChatCompletionPayload(payload) {
     throw new Error("Request body must be a JSON object.");
   }
 
-  const { model = DEFAULT_MODEL, messages, prompt, ...rest } = payload;
+  const { model = DEFAULT_MODEL, messages, prompt, stream, ...rest } = payload;
 
   if (typeof model !== "string" || model.trim() === "") {
     throw new Error("model must be a non-empty string.");
@@ -280,6 +280,17 @@ function buildChatCompletionPayload(payload) {
         },
       ])
     .map((message, index) => normalizeMessage(message, index));
+
+  if (typeof stream !== "undefined") {
+    if (typeof stream === "string") {
+      const normalized = stream.trim().toLowerCase();
+      if (normalized && normalized !== "false" && normalized !== "0") {
+        throw new Error("stream option is not supported by this proxy.");
+      }
+    } else if (stream) {
+      throw new Error("stream option is not supported by this proxy.");
+    }
+  }
 
   const requestBody = {
     model: trimmedModel,
