@@ -9,6 +9,10 @@ fi
 ZONE_NAME=${ZONE_NAME:-goldshore.org}
 API="https://api.cloudflare.com/client/v4"
 
+cf_api() {
+  curl --fail-with-body -sS "$@"
+}
+
 # Resolve the zone identifier when not provided explicitly.
 if [[ -z "${CF_ZONE_ID:-}" ]]; then
   CF_ZONE_ID=$(curl -sS --fail-with-body -X GET "$API/zones?name=$ZONE_NAME" \
