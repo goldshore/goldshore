@@ -13,7 +13,7 @@ AUTH_HEADER=("-H" "Authorization: Bearer ${CF_API_TOKEN}" "-H" "Content-Type: ap
 get_zone_id() {
   if [[ -n "${CF_ZONE_ID:-}" ]]; then
     echo "${CF_ZONE_ID}"
-    return 0
+    return
   fi
 
   curl -sS -X GET "${API}/zones?name=${ZONE_NAME}" "${AUTH_HEADER[@]}" | jq -r '.result[0].id // ""'
