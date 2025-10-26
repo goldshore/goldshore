@@ -12,7 +12,7 @@ Empowering communities through secure, scalable, and intelligent infrastructure.
 | Preview     | `preview/*` branches | `preview.goldshore.org`<br>`preview.gearswipe.com`<br>`preview.armsway.com`<br>`preview.banproof.com`                                                         | `https://goldshore-org-preview.pages.dev` |
 | Development | `dev/*` branches     | `dev.goldshore.org`<br>`dev.gearswipe.com`<br>`dev.armsway.com`<br>`dev.banproof.com`                                                                           | `https://goldshore-org-dev.pages.dev`     |
 
-Use the "Deploy to Cloudflare" workflow to publish updates on demand by selecting the desired environment. API hostnames such as `api.goldshore.org` stay mapped to their dedicated services and are intentionally excluded from the router worker routes. When new marketing hostnames are introduced, add them to the table and to `wrangler.toml` explicitly so non-site subdomains (API, SMTP, etc.) keep routing to their purpose-built origins instead of the worker.
+Use the "Deploy to Cloudflare" workflow to publish updates on demand by selecting the desired environment. API hostnames such as `api.goldshore.org` stay mapped to their dedicated services and are intentionally excluded from the router worker routes. When new marketing hostnames are introduced, add them to the table and to `wrangler.toml` explicitly. Avoid `*.<domain>` wildcard routes—those would capture API, SMTP, MX, and other service subdomains that should keep resolving to their dedicated infrastructure instead of the worker router.
 
 ## Environment configuration
 

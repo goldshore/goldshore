@@ -30,8 +30,9 @@ routes = [
   # API subdomains like `api.goldshore.org` continue to resolve to their dedicated
   # origins provisioned by the deployment workflow instead of hitting this router.
   # When onboarding another marketing hostname, add an explicit entry below instead
-  # of a wildcard so that service-specific subdomains (API, SMTP, etc.) keep their
-  # own DNS mappings and skip the router entirely.
+  # of a wildcard. Mapping `*.<domain>` to the router would override DNS for
+  # service-specific subdomains (API, SMTP, MX, etc.), so always register only the
+  # marketing hostnames that should serve the Pages site.
   { pattern = "goldshore.org/*", zone_name = "goldshore.org" },
   { pattern = "www.goldshore.org/*", zone_name = "goldshore.org" },
   { pattern = "gearswipe.com/*", zone_name = "gearswipe.com" },
