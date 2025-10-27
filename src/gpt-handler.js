@@ -37,7 +37,7 @@ function getAllowedOrigins(env) {
   return (env.GPT_ALLOWED_ORIGINS || "")
     .split(",")
     .map((origin) => origin.trim())
-    .filter(Boolean);
+    .filter((origin) => origin !== "");
 }
 
 function resolveAllowedOrigin(requestOrigin, allowedOrigins) {
@@ -82,6 +82,14 @@ function jsonResponse(body, init = {}, corsOrigin = null) {
   const headers = new Headers(init.headers || {});
   const corsHeaders = buildCorsHeaders(corsOrigin);
 
+  if (init.headers) {
+    const initHeaders = new Headers(init.headers);
+    for (const [key, value] of initHeaders.entries()) {
+      headers.set(key, value);
+    }
+  }
+
+  const corsHeaders = buildCorsHeaders(origin);
   for (const [key, value] of corsHeaders.entries()) {
     headers.set(key, value);
   }
@@ -235,7 +243,7 @@ function authenticateRequest(request, env, corsOrigin) {
     };
   }
 
-  return { ok: true };
+  return null;
 }
 
 function normalizeMessage(message, index) {
