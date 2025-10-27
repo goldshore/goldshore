@@ -85,6 +85,52 @@ document.querySelectorAll('[data-cta]').forEach(el => {
   });
 });
 
+// Hero CTA emphasis
+document.querySelectorAll('[data-hero-cta]').forEach(el => {
+  el.addEventListener('click', () => {
+    track('hero_cta_click', {
+      cta: el.dataset.cta,
+      hero_cta: el.dataset.heroCta || el.dataset.cta,
+      text: (el.textContent || '').trim()
+    });
+  });
+});
+
+// Plan card CTA emphasis
+document.querySelectorAll('[data-plan-cta]').forEach(el => {
+  el.addEventListener('click', () => {
+    track('plan_cta_click', {
+      cta: el.dataset.cta,
+      plan_action: el.dataset.planCta || 'cta',
+      text: (el.textContent || '').trim()
+    });
+  });
+});
+
+// Plan card detail toggle
+document.querySelectorAll('[data-plan-toggle]').forEach(button => {
+  const targetSelector = button.dataset.planToggleTarget;
+  if (!targetSelector) return;
+
+  const target = document.querySelector(targetSelector);
+  if (!target) return;
+
+  const labelOpen = button.dataset.planToggleLabelOpen || button.textContent;
+  const labelClose = button.dataset.planToggleLabelClose || labelOpen;
+
+  button.addEventListener('click', () => {
+    const isHidden = target.classList.toggle('hidden');
+    const expanded = !isHidden;
+    button.setAttribute('aria-expanded', String(expanded));
+    button.textContent = expanded ? labelClose : labelOpen;
+
+    track('plan_details_toggle', {
+      expanded,
+      target: targetSelector
+    });
+  });
+});
+
 // External links (basic)
 document.querySelectorAll('a[href^="http"]').forEach(a => {
   try {
