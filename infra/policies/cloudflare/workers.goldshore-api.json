@@ -1,0 +1,48 @@
+{
+  "script": "goldshore-api",
+  "description": "Routes requests between production, preview, and dev Pages deployments while stamping observability headers.",
+  "compatibility_date": "2024-02-19",
+  "environments": {
+    "production": {
+      "routes": [
+        "goldshore.org/*"
+      ],
+      "vars": {
+        "PRODUCTION_ASSETS": "https://goldshore-web.pages.dev",
+        "PREVIEW_ASSETS": "https://goldshore-web-preview.pages.dev",
+        "DEV_ASSETS": "https://goldshore-web-dev.pages.dev",
+        "ACCESS_AUD": "goldshore-admin"
+      },
+      "d1_databases": [
+        {
+          "binding": "GOLDSHORE_DB",
+          "database": "goldshore"
+        }
+      ]
+    },
+    "preview": {
+      "routes": [
+        "preview.goldshore.org/*"
+      ],
+      "vars": {
+        "PRODUCTION_ASSETS": "https://goldshore-web.pages.dev",
+        "PREVIEW_ASSETS": "https://goldshore-web-preview.pages.dev",
+        "DEV_ASSETS": "https://goldshore-web-dev.pages.dev"
+      }
+    },
+    "development": {
+      "routes": [
+        "dev.goldshore.org/*"
+      ],
+      "vars": {
+        "PRODUCTION_ASSETS": "https://goldshore-web.pages.dev",
+        "PREVIEW_ASSETS": "https://goldshore-web-preview.pages.dev",
+        "DEV_ASSETS": "https://goldshore-web-dev.pages.dev"
+      }
+    }
+  },
+  "logpush": {
+    "dataset": "http_requests",
+    "destination": "r2://goldshore-logs/workers/${DATE}.json"
+  }
+}
