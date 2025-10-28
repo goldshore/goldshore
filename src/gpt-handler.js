@@ -40,6 +40,20 @@ function jsonResponse(body, init = {}, corsOrigin = null) {
   for (const [key, value] of corsHeaders) {
     headers.set(key, value);
   }
+
+  if (allowedOrigin) {
+    headers.set("Access-Control-Allow-Origin", allowedOrigin);
+  } else {
+    headers.delete("Access-Control-Allow-Origin");
+  }
+
+  headers.append("Vary", "Origin");
+
+  return headers;
+}
+
+function jsonResponse(body, init = {}, allowedOrigin) {
+  const headers = applyCorsHeaders(new Headers(init.headers || {}), allowedOrigin);
   headers.set("content-type", "application/json");
 
   return new Response(JSON.stringify(body), {

@@ -1,0 +1,22 @@
+{
+  "name": "goldshore",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "cd apps/web && astro dev",
+    "build": "node packages/image-tools/process-images.mjs && cd apps/web && astro build",
+    "deploy:prod": "wrangler deploy --env=production",
+    "deploy:preview": "wrangler deploy --env=preview",
+    "deploy:dev": "wrangler deploy --env=dev",
+    "qa": "node .github/workflows/local-qa.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.42.0",
+    "sharp": "^0.33.5",
+    "astro": "^4.0.0"
+  }
+}

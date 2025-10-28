@@ -1,18 +1,25 @@
-# Gold Shore Labs
+# Gold Shore monorepo
 
-Empowering communities through secure, scalable, and intelligent infrastructure.  
-💻 Building tools in Cybersecurity, Cloud, and Automation.
-🌐 Visit us at [GoldShoreLabs](https://goldshore.org)
+This repository follows the Gold Shore agent playbook: a lightweight monorepo that keeps the Astro site, Cloudflare Worker, and
+infrastructure scripts in one place so the CI agent can ship predictable deployments.
 
-## Cloudflare deployment environments
+## Layout
 
-| Environment | Branch trigger       | Worker route domains                                                                                                                                          | Pages origin                             |
-|-------------|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|
-| Production  | `main`               | `goldshore.org`<br>`www.goldshore.org`<br>`gearswipe.com`<br>`www.gearswipe.com`<br>`armsway.com`<br>`www.armsway.com`<br>`banproof.com`<br>`www.banproof.com` | `https://goldshore-org.pages.dev`         |
-| Preview     | `preview/*` branches | `preview.goldshore.org`<br>`preview.gearswipe.com`<br>`preview.armsway.com`<br>`preview.banproof.com`                                                         | `https://goldshore-org-preview.pages.dev` |
-| Development | `dev/*` branches     | `dev.goldshore.org`<br>`dev.gearswipe.com`<br>`dev.armsway.com`<br>`dev.banproof.com`                                                                           | `https://goldshore-org-dev.pages.dev`     |
+```
+goldshore/
+├─ apps/
+│  ├─ api-router/      # Cloudflare Worker router
+│  └─ web/             # Astro marketing site
+├─ packages/
+│  └─ image-tools/     # Sharp image optimisation script
+├─ infra/
+│  └─ scripts/         # DNS automation
+├─ .github/workflows/  # Deploy + QA pipelines
+├─ wrangler.toml       # Worker configuration
+└─ package.json        # Workspace scripts for agents
+```
 
-Use the "Deploy to Cloudflare" workflow to publish updates on demand by selecting the desired environment.
+### Key files
 
 ## GPT handler endpoint
 
@@ -29,7 +36,7 @@ wrangler secret put GPT_SHARED_SECRET
 wrangler secret put GPT_ALLOWED_ORIGINS
 ```
 
-Example request payload:
+Add the following secrets under **Settings → Secrets and variables → Actions**:
 
 ```bash
 curl -X POST "https://goldshore.org/api/gpt" \
@@ -132,3 +139,20 @@ You are a Git-integrated AI web development assistant working inside the GitHub 
   - `.github/workflows/deploy.yml` (if CI enabled)
 
 --
+- `CF_API_TOKEN`
+- `CF_ACCOUNT_ID`
+
+If either secret is missing the deploy workflow will fail early, prompting the operator to add them before proceeding.
+
+## DNS + environments
+
+The Worker expects Cloudflare Pages projects mapped to:
+
+- `goldshore-org.pages.dev` for production
+- `goldshore-org-preview.pages.dev` for preview
+- `goldshore-org-dev.pages.dev` for development
+
+The DNS upsert script keeps these hostnames pointed at the correct Pages project using proxied CNAME records for:
+`goldshore.org`, `www.goldshore.org`, `preview.goldshore.org`, and `dev.goldshore.org`.
+
+Protect `/admin` with Cloudflare Access so only approved operators can reach the administrative shell.
