@@ -15,23 +15,98 @@ GPT_ALLOWED_ORIGINS = "https://goldshore.org, https://www.goldshore.org, https:/
 # `wrangler secret put …` or `.dev.vars` in local development.
 
 [env.production]
-# Preview and dev hostnames are managed by their respective environments so production
-# deploys don't reattach them to the primary router script.
-routes = [
-  # Routes for primary marketing hostnames. Wildcards are intentionally avoided so
-  # API subdomains like `api.goldshore.org` continue to resolve to their dedicated
-  # origins provisioned by the deployment workflow instead of hitting this router.
-  # Explicitly enumerate any additional marketing hosts so that non-site services
-  # remain mapped to their own infrastructure rather than this worker.
-  { pattern = "goldshore.org/*", zone_name = "goldshore.org" },
-  { pattern = "www.goldshore.org/*", zone_name = "goldshore.org" },
-  { pattern = "gearswipe.com/*", zone_name = "gearswipe.com" },
-  { pattern = "www.gearswipe.com/*", zone_name = "gearswipe.com" },
-  { pattern = "armsway.com/*", zone_name = "armsway.com" },
-  { pattern = "www.armsway.com/*", zone_name = "armsway.com" },
-  { pattern = "banproof.com/*", zone_name = "banproof.com" },
-  { pattern = "www.banproof.com/*", zone_name = "banproof.com" }
-]
+# Cloudflare resolves Worker routes by ascending priority (lower numbers match first)
+# and then by declaration order. Assign explicit priorities so preview/dev hostnames
+# keep routing to their environment-specific workers even when production hosts cover
+# the apex domain. Avoid wildcards so API subdomains remain mapped to their dedicated
+# infrastructure rather than being intercepted by this router.
+[[env.production.routes]]
+pattern = "preview.goldshore.org/*"
+zone_name = "goldshore.org"
+script = "router-preview"
+priority = 10
+
+[[env.production.routes]]
+pattern = "dev.goldshore.org/*"
+zone_name = "goldshore.org"
+script = "router-dev"
+priority = 10
+
+[[env.production.routes]]
+pattern = "preview.gearswipe.com/*"
+zone_name = "gearswipe.com"
+script = "router-preview"
+priority = 10
+
+[[env.production.routes]]
+pattern = "dev.gearswipe.com/*"
+zone_name = "gearswipe.com"
+script = "router-dev"
+priority = 10
+
+[[env.production.routes]]
+pattern = "preview.armsway.com/*"
+zone_name = "armsway.com"
+script = "router-preview"
+priority = 10
+
+[[env.production.routes]]
+pattern = "dev.armsway.com/*"
+zone_name = "armsway.com"
+script = "router-dev"
+priority = 10
+
+[[env.production.routes]]
+pattern = "preview.banproof.com/*"
+zone_name = "banproof.com"
+script = "router-preview"
+priority = 10
+
+[[env.production.routes]]
+pattern = "dev.banproof.com/*"
+zone_name = "banproof.com"
+script = "router-dev"
+priority = 10
+
+[[env.production.routes]]
+pattern = "goldshore.org/*"
+zone_name = "goldshore.org"
+priority = 50
+
+[[env.production.routes]]
+pattern = "www.goldshore.org/*"
+zone_name = "goldshore.org"
+priority = 50
+
+[[env.production.routes]]
+pattern = "gearswipe.com/*"
+zone_name = "gearswipe.com"
+priority = 50
+
+[[env.production.routes]]
+pattern = "www.gearswipe.com/*"
+zone_name = "gearswipe.com"
+priority = 50
+
+[[env.production.routes]]
+pattern = "armsway.com/*"
+zone_name = "armsway.com"
+priority = 50
+
+[[env.production.routes]]
+pattern = "www.armsway.com/*"
+zone_name = "armsway.com"
+priority = 50
+
+[[env.production.routes]]
+pattern = "banproof.com/*"
+zone_name = "banproof.com"
+priority = 50
+
+[[env.production.routes]]
+pattern = "www.banproof.com/*"
+zone_name = "banproof.com"
+priority = 50
 
 [env.production.vars]
 ASSETS_ORIGIN = "https://goldshore-org.pages.dev"
