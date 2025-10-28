@@ -1,0 +1,230 @@
+---
+import BaseLayout from "../layouts/Base.astro";
+
+const meta = {
+  title: "Contact Gold Shore — Book a strategy session",
+  description: "Request a working session with Gold Shore to plan your launch, narrative defense, or growth initiative.",
+  canonical: "https://goldshore.org/contact"
+};
+
+const buildTimeTurnstileKey = import.meta.env.PUBLIC_TURNSTILE_SITE_KEY;
+const sanitizedBuildTimeKey =
+  typeof buildTimeTurnstileKey === 'string' && buildTimeTurnstileKey !== 'undefined'
+    ? buildTimeTurnstileKey
+    : '';
+---
+<BaseLayout {...meta}>
+  <h1 class="section-title">Let’s build momentum</h1>
+  <p class="section-subtitle">
+    Share your focus area and timeline. We’ll align on scope within one business day and route you to the right operator.
+  </p>
+
+  <form
+    class="card"
+    action="/api/contact"
+    method="POST"
+    style="display: grid; gap: 20px;"
+  >
+    <input type="hidden" name="_redirect" value="/contact#contact-success" />
+    <div>
+      <label for="name">Name</label>
+      <input id="name" name="name" type="text" required placeholder="Ada Lovelace" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2); background: rgba(10,15,26,.6); color: var(--fg);" />
+    </div>
+    <div>
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" required placeholder="you@example.com" style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2); background: rgba(10,15,26,.6); color: var(--fg);" />
+    </div>
+    <div>
+      <label for="focus">What do you need?</label>
+      <select id="focus" name="focus" required style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2); background: rgba(10,15,26,.6); color: var(--fg);">
+        <option value="">Select a track</option>
+        <option>Launch architecture</option>
+        <option>Reputation defense</option>
+        <option>Intelligence ops</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div>
+      <label for="message">Context</label>
+      <textarea id="message" name="message" rows="5" required placeholder="Tell us about the product, timeline, and any material we should review." style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2); background: rgba(10,15,26,.6); color: var(--fg);"></textarea>
+    </div>
+    <div id="turnstile-wrapper" style="display: none; justify-content: center;">
+      <div id="turnstile-container"></div>
+    </div>
+    <div id="turnstile-error" style="display: none; font-size: 0.9rem; text-align: center; color: rgba(255, 180, 180, 0.85);">
+      Verification is unavailable. Refresh the page or email
+      <a href="mailto:intake@goldshore.org" style="color: inherit; text-decoration: underline;">intake@goldshore.org</a>.
+    <div
+      id="turnstile-wrapper"
+      data-build-sitekey={sanitizedBuildTimeKey}
+      style="display: none; justify-content: center;"
+    >
+      <div id="turnstile-container" class="cf-turnstile" data-theme="dark"></div>
+    </div>
+    <button class="btn" type="submit">Submit request</button>
+  </form>
+
+  <div id="contact-success" class="card" style="margin-top: 24px; display: none; background: rgba(0, 64, 32, 0.35); color: #c9f7d4;">
+    <p style="margin: 0;">Thanks for the note—we’ll reach out within one business day.</p>
+  </div>
+
+  <script>
+    (function () {
+      const revealWidget = (siteKey) => {
+        if (!siteKey) {
+          return;
+        }
+
+        const wrapper = document.getElementById('turnstile-wrapper');
+        if (wrapper) {
+          wrapper.style.display = 'flex';
+        }
+
+        const renderWidget = () => {
+          if (typeof turnstile === 'undefined') {
+            setTimeout(renderWidget, 100);
+            return;
+          }
+
+          try {
+            turnstile.render('#turnstile-container', {
+              sitekey: siteKey,
+              theme: 'dark'
+            });
+          } catch (error) {
+            console.error('Failed to render Turnstile widget', error);
+          }
+        };
+
+        renderWidget();
+      };
+
+      const bootstrap = async () => {
+        const wrapper = document.getElementById('turnstile-wrapper');
+        const buildTimeKey = wrapper?.dataset?.buildSitekey;
+        if (buildTimeKey && buildTimeKey !== 'undefined') {
+          revealWidget(buildTimeKey);
+          return;
+        }
+
+        try {
+          const response = await fetch('/api/turnstile/site-key');
+          if (!response.ok) {
+            return;
+          }
+
+          const payload = await response.json();
+          if (payload && payload.siteKey) {
+            revealWidget(payload.siteKey);
+          }
+        } catch (error) {
+          console.error('Failed to fetch Turnstile site key', error);
+        }
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bootstrap);
+      } else {
+        bootstrap();
+      }
+    })();
+  </script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <script>
+    (function () {
+      const wrapper = document.getElementById('turnstile-wrapper');
+      const container = document.getElementById('turnstile-container');
+      const errorMessage = document.getElementById('turnstile-error');
+
+      async function fetchSiteKey() {
+        const response = await fetch('/api/turnstile-site-key', {
+          headers: { 'accept': 'application/json' }
+        });
+
+        if (!response.ok) {
+          throw new Error(`unexpected status ${response.status}`);
+        }
+
+        const payload = await response.json();
+        if (!payload || !payload.siteKey) {
+          throw new Error('missing site key');
+        }
+
+        return payload.siteKey;
+      }
+
+      function ensureTurnstileScript() {
+        return new Promise((resolve, reject) => {
+          if (window.turnstile && typeof window.turnstile.render === 'function') {
+            resolve(window.turnstile);
+            return;
+          }
+
+          const existing = document.querySelector('script[data-turnstile]');
+          if (existing) {
+            existing.addEventListener('load', () => resolve(window.turnstile), { once: true });
+            existing.addEventListener('error', reject, { once: true });
+            return;
+          }
+
+          const script = document.createElement('script');
+          script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+          script.async = true;
+          script.defer = true;
+          script.dataset.turnstile = 'true';
+          script.addEventListener('load', () => resolve(window.turnstile), { once: true });
+          script.addEventListener('error', reject, { once: true });
+          document.head.appendChild(script);
+        });
+      }
+
+      async function initTurnstile() {
+        if (!container) return;
+
+        try {
+          const siteKey = await fetchSiteKey();
+          const turnstile = await ensureTurnstileScript();
+
+          if (!turnstile || typeof turnstile.render !== 'function') {
+            throw new Error('turnstile unavailable');
+          }
+
+          if (wrapper) {
+            wrapper.style.display = 'flex';
+          }
+
+          turnstile.render(container, {
+            sitekey: siteKey,
+            theme: 'dark'
+          });
+        } catch (err) {
+          console.error('Failed to initialize Turnstile widget', err);
+          if (errorMessage) {
+            errorMessage.style.display = 'block';
+          }
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initTurnstile, { once: true });
+      } else {
+        initTurnstile();
+      }
+    })();
+
+    if (typeof window !== 'undefined' && window.location.hash === '#contact-success') {
+      const success = document.getElementById('contact-success');
+      if (success) {
+        success.style.display = 'block';
+      }
+    }
+  </script>
+
+  <section style="margin-top: clamp(48px, 8vw, 96px);">
+    <h2 class="section-title">Availability</h2>
+    <p class="section-subtitle">We host strategy calls on Tuesdays and Thursdays. Urgent reputation work is on-call 24/7.</p>
+    <div class="card">
+      <p style="margin: 0;">Prefer async? Email <a href="mailto:intake@goldshore.org">intake@goldshore.org</a> with decks, briefs, or data rooms.</p>
+    </div>
+  </section>
+</BaseLayout>

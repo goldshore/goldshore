@@ -22,7 +22,7 @@ const pickOrigin = (host: string, env: Env): string => {
 const cachePolicy = (pathname: string): string =>
   /\.(?:js|css|png|jpg|jpeg|webp|avif|svg|woff2?)$/i.test(pathname)
     ? 'public, max-age=31536000, immutable'
-    : 'public, s-maxage=600, stale-while-revalidate=86400';
+    : 'no-store';
 
 export default {
   async fetch(request, env): Promise<Response> {
@@ -42,7 +42,7 @@ export default {
 
     const response = await fetch(upstream.toString(), init);
     const headers = new Headers(response.headers);
-    headers.set('x-served-by', env.APP_NAME);
+    headers.set('x-served-by', env.APP_NAME ?? 'GoldShore');
     headers.set('cache-control', cachePolicy(url.pathname));
 
     return new Response(response.body, {
