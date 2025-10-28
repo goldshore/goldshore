@@ -12,7 +12,7 @@ Empowering communities through secure, scalable, and intelligent infrastructure.
 | Preview     | `preview/*` branches | `preview.goldshore.org`<br>`preview.gearswipe.com`<br>`preview.armsway.com`<br>`preview.banproof.com`                                                         | `https://goldshore-org-preview.pages.dev` |
 | Development | `dev/*` branches     | `dev.goldshore.org`<br>`dev.gearswipe.com`<br>`dev.armsway.com`<br>`dev.banproof.com`                                                                           | `https://goldshore-org-dev.pages.dev`     |
 
-Use the "Deploy to Cloudflare" workflow to publish updates on demand by selecting the desired environment. API hostnames such as `api.goldshore.org` stay mapped to their dedicated services and are intentionally excluded from the router worker routes, so only the explicitly listed marketing hosts are proxied through the worker.
+Use the "Deploy to Cloudflare" workflow to publish updates on demand by selecting the desired environment. API hostnames such as `api.goldshore.org` stay mapped to their dedicated services and are intentionally excluded from the router worker routes, so only the explicitly listed marketing hosts are proxied through the worker. Cloudflare processes Worker routes by priority before declaration order, so preview and dev entries are assigned a lower priority value than the production hosts. Keep any environment-specific entries grouped at the top—and avoid wildcard patterns—so non-site subdomains keep resolving to their own infrastructure.
 
 ## Environment configuration
 
