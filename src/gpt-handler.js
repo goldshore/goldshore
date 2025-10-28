@@ -66,23 +66,14 @@ function buildCorsHeaders(origin) {
     headers.set(key, value);
   }
 
-  if (origin) {
-    headers.set("Access-Control-Allow-Origin", origin);
     headers.set("Vary", "Origin");
   }
 
   headers.set("Access-Control-Allow-Methods", ALLOWED_METHODS);
   headers.set("Access-Control-Allow-Headers", ALLOWED_HEADERS);
 
-  return headers;
-}
 
-function jsonResponse(body, init = {}, corsOrigin = null) {
   const headers = new Headers(init.headers);
-  const corsHeaders = buildCorsHeaders(corsOrigin);
-
-  for (const [key, value] of corsHeaders.entries()) {
-    headers.set(key, value);
   }
 
   if (!headers.has("content-type")) {
@@ -150,20 +141,7 @@ function validateOrigin(request, env) {
 
   const allowedOrigin = resolveAllowedOrigin(requestOrigin, allowedOrigins);
   if (!allowedOrigin) {
-    return {
-      ok: false,
-      response: errorResponse("Origin not allowed.", 403, undefined, requestOrigin),
-    };
-  }
-
   return { ok: true, origin: allowedOrigin };
-}
-
-function getExpectedSecret(env) {
-  return env.GPT_SHARED_SECRET ?? env.GPT_PROXY_SECRET ?? null;
-}
-
-function extractProvidedToken(request) {
   const authorization = request.headers.get("Authorization");
   const bearerToken = extractBearerToken(authorization);
   if (bearerToken) {
@@ -181,7 +159,6 @@ function extractProvidedToken(request) {
   }
 
   return null;
-}
 
 function authenticateRequest(request, env, corsOrigin) {
   const expectedToken = getExpectedSecret(env);
@@ -325,7 +302,6 @@ function buildChatCompletionPayload(payload) {
   }
 
   const requestBody = {
-    model: trimmedModel,
     messages: normalizedMessages,
   };
 
@@ -372,8 +348,6 @@ async function handlePost(request, env, corsOrigin) {
     );
   }
 
-  try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "content-type": "application/json",
@@ -390,7 +364,6 @@ async function handlePost(request, env, corsOrigin) {
       return errorResponse(
         "Unexpected response from OpenAI API.",
         502,
-        { body: responseText },
         corsOrigin,
       );
     }
