@@ -5,21 +5,6 @@ workers_dev = false
 # account_id is injected at runtime via CLOUDFLARE_ACCOUNT_ID when running in CI.
 account_id = "00000000000000000000000000000000"
 
-[[secrets_store_secrets]]
-binding     = "OPENAI_API_KEY"
-store_id    = "b9824d3280c54573a24137c7e7143b33"
-secret_name = "OPENAI_API_KEY"
-
-[[secrets_store_secrets]]
-binding     = "OPENAI_PROJECT_ID"
-store_id    = "b9824d3280c54573a24137c7e7143b33"
-secret_name = "OPENAI_PROJECT_ID"
-
-[[secrets_store_secrets]]
-binding     = "CF_API_TOKEN"
-store_id    = "b9824d3280c54573a24137c7e7143b33"
-secret_name = "CF_API_TOKEN"
-
 [vars]
 APP_NAME = "GoldShore"
 
@@ -30,8 +15,35 @@ database_id = "REPLACE_WITH_D1_ID"
 
 [env.production]
 routes = [
-  { pattern = "goldshore.org/*",     zone_name = "goldshore.org" },
-  { pattern = "www.goldshore.org/*", zone_name = "goldshore.org" }
+  { pattern = "goldshore.org/*", zone_name = "goldshore.org" },
+  { pattern = "www.goldshore.org/*", zone_name = "goldshore.org" },
+  { pattern = "admin.goldshore.org/*", zone_name = "goldshore.org" },
+  { pattern = "api.goldshore.org/*", zone_name = "goldshore.org" },
+  { pattern = "web.goldshore.org/*", zone_name = "goldshore.org" },
+
+  { pattern = "goldshore.foundation/*", zone_name = "goldshore.foundation" },
+  { pattern = "www.goldshore.foundation/*", zone_name = "goldshore.foundation" },
+  { pattern = "admin.goldshore.foundation/*", zone_name = "goldshore.foundation" },
+  { pattern = "api.goldshore.foundation/*", zone_name = "goldshore.foundation" },
+  { pattern = "web.goldshore.foundation/*", zone_name = "goldshore.foundation" },
+
+  { pattern = "goldshorefoundation.org/*", zone_name = "goldshorefoundation.org" },
+  { pattern = "www.goldshorefoundation.org/*", zone_name = "goldshorefoundation.org" },
+  { pattern = "admin.goldshorefoundation.org/*", zone_name = "goldshorefoundation.org" },
+  { pattern = "api.goldshorefoundation.org/*", zone_name = "goldshorefoundation.org" },
+  { pattern = "web.goldshorefoundation.org/*", zone_name = "goldshorefoundation.org" },
+
+  { pattern = "fortune-fund.com/*", zone_name = "fortune-fund.com" },
+  { pattern = "www.fortune-fund.com/*", zone_name = "fortune-fund.com" },
+  { pattern = "admin.fortune-fund.com/*", zone_name = "fortune-fund.com" },
+  { pattern = "api.fortune-fund.com/*", zone_name = "fortune-fund.com" },
+  { pattern = "web.fortune-fund.com/*", zone_name = "fortune-fund.com" },
+
+  { pattern = "fortune-fund.games/*", zone_name = "fortune-fund.games" },
+  { pattern = "www.fortune-fund.games/*", zone_name = "fortune-fund.games" },
+  { pattern = "admin.fortune-fund.games/*", zone_name = "fortune-fund.games" },
+  { pattern = "api.fortune-fund.games/*", zone_name = "fortune-fund.games" },
+  { pattern = "web.fortune-fund.games/*", zone_name = "fortune-fund.games" }
 ]
 
 [env.preview]

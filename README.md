@@ -41,7 +41,7 @@ Deployments are handled by **.github/workflows/deploy.yml** whenever `main` chan
 - builds the Astro site,
 - deploys the Worker to `production`, `preview`, and `dev` environments,
 - reconciles Cloudflare Access apps, and
-- syncs DNS records for `goldshore.org` hosts.
+- syncs DNS records for the GoldShore and Fortune Fund domains.
 
 Required repository secrets:
 
@@ -49,10 +49,7 @@ Required repository secrets:
 | --- | --- |
 | `CF_ACCOUNT_ID` | Cloudflare account containing the Worker and Access apps |
 | `CF_API_TOKEN` | Token with Workers, Pages, DNS, and Access permissions |
-| `CF_SECRET_STORE_ID` | Cloudflare Secrets Store identifier |
-| `CF_ZONE_ID` | Zone ID for `goldshore.org` (used by DNS sync job) |
-| `OPENAI_API_KEY` | Access token for AI maintenance tasks |
-| `OPENAI_PROJECT_ID` | Associated OpenAI project identifier |
+| `CF_ZONE_ID` (optional) | Fallback zone ID when `CF_ZONE_ID_*` variables are not provided |
 
 ## AI maintenance
 
@@ -64,7 +61,7 @@ The scheduled **AI maintenance (safe)** workflow lint checks Astro/CSS assets, r
 
 ## Infrastructure scripts
 
-- `infra/scripts/upsert-goldshore-dns.sh` keeps the core DNS records up to date. It requires `CF_API_TOKEN` and either `CF_ZONE_ID` or a resolvable `ZONE_NAME`.
+- `infra/scripts/upsert-goldshore-dns.sh` keeps DNS records up to date across `goldshore.org`, `goldshore.foundation`, `goldshorefoundation.org`, `fortune-fund.com`, and `fortune-fund.games`. It requires `CF_API_TOKEN` and can accept `ZONE_NAMES`, `CF_ZONE_ID`, or per-zone `CF_ZONE_ID_*` overrides.
 - `infra/scripts/rebuild-goldshore-access.sh` replays the Access configuration stored in `infra/access/applications.json`.
 
 Both scripts are safe to run repeatedly; they will create or update records and policies as needed.
@@ -100,7 +97,7 @@ Key entry points:
 
 | Workflow | Purpose | Trigger |
 | --- | --- | --- |
-| `deploy.yml` | Builds the Astro site, deploys the Worker to `production`, `preview`, and `dev`, refreshes Access, and syncs DNS. | Push to `main` (selected paths) or manual run |
+| `deploy.yml` | Builds the Astro site, deploys the Worker to `production`, `preview`, and `dev`, then refreshes Access and syncs DNS once per push. | Push to `main` (selected paths) or manual run |
 | `ai_maint.yml` | Runs linting, Lighthouse smoke tests, and guarded AI copy suggestions that open PRs. | Nightly (05:00 UTC) or manual run |
 | `sync_dns.yml` | Manually replays the DNS upsert script. | Manual run |
 
@@ -110,11 +107,9 @@ Configure the following repository secrets under **Settings → Secrets and vari
 
 - `CF_ACCOUNT_ID`
 - `CF_API_TOKEN`
-- `CF_SECRET_STORE_ID`
-- `OPENAI_API_KEY`
-- `OPENAI_PROJECT_ID`
+- `CF_ZONE_ID` (optional fallback for DNS sync)
 
-These secrets are consumed by the Worker (via the Secrets Store binding) and GitHub Actions. The deploy workflow also expects `jq` (available on the GitHub Actions runner).
+These secrets are consumed by the GitHub Actions workflows. The deploy workflow also expects `jq` (available on the GitHub Actions runner).
 
 ## Local development
 
@@ -147,7 +142,7 @@ Future Drizzle integration can live in `packages/db` alongside the schema.
 
 ## Notes
 
-- The Worker deploy relies on the Cloudflare Secrets Store; be sure the store already contains the mapped secrets (`OPENAI_API_KEY`, `OPENAI_PROJECT_ID`, `CF_API_TOKEN`).
+- DNS automation supports multiple zones via the `ZONE_NAMES` variable or per-zone `CF_ZONE_ID_*` overrides.
 - Cloudflare Access automation defaults to allowing `@goldshore.org` addresses. Adjust `ALLOWED_DOMAIN` when running the script if your allowlist differs.
 - The AI maintenance workflow is conservative and only opens pull requests when copy changes are suggested. Merge decisions stay in human hands.
 # GoldShore Infrastructure Monorepo
@@ -167,7 +162,7 @@ packages/
 infra/
   scripts/        # Cloudflare DNS and Access automation scripts
 .github/workflows # Deployment, DNS sync, and AI maintenance pipelines
-wrangler.toml     # Worker + environment configuration (Secrets Store enabled)
+wrangler.toml     # Worker + environment configuration
 package.json      # npm workspaces and shared dev dependencies
 ```
 
@@ -183,7 +178,7 @@ package.json      # npm workspaces and shared dev dependencies
 
 ## Cloudflare configuration
 
-- `wrangler.toml` binds the Worker to the GoldShore Secrets Store (`OPENAI_API_KEY`, `OPENAI_PROJECT_ID`, `CF_API_TOKEN`).
+- `wrangler.toml` defines Worker routing and the D1 database binding.
 - Provide a D1 database binding once the database is provisioned:
   ```toml
   [[d1_databases]]
@@ -194,15 +189,15 @@ package.json      # npm workspaces and shared dev dependencies
 - Secrets referenced in the GitHub Actions workflows must be added under **Settings → Secrets and variables → Actions**:
   - `CF_ACCOUNT_ID`
   - `CF_API_TOKEN`
-  - `CF_SECRET_STORE_ID`
-  - `OPENAI_API_KEY`
-  - `OPENAI_PROJECT_ID`
+  - `CF_ZONE_ID` (optional fallback for DNS sync)
 
 ## Scripts
 
-- `infra/scripts/upsert-goldshore-dns.sh` — idempotently ensures the apex, `www`, `preview`, and `dev` DNS records exist and are proxied through Cloudflare.
+- `infra/scripts/upsert-goldshore-dns.sh` — idempotently ensures apex, environment, and service subdomains exist for all supported zones and are proxied through Cloudflare.
 - `infra/scripts/rebuild-goldshore-access.sh` — recreates Access applications for production, preview, and development admin surfaces with a default allow policy.
 - `apps/web/scripts/process-images.mjs` — optimizes raw hero/gallery images into WebP and AVIF variants with subtle overlays.
+
+Customize DNS targets per zone by defining environment variables such as `ADMIN_PAGES_HOST_GOLDSHORE_FOUNDATION` or `API_WORKER_HOST_FORTUNE_FUND_COM` before invoking the sync script.
 
 ## Database seed
 
