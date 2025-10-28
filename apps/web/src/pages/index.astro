@@ -1,8 +1,13 @@
 ---
 import '../styles/theme.css';
 
+type HeroContent = {
+  title: string;
+  subtitle: string;
+  cta: { text: string; href: string };
+};
 
-const hero = {
+const hero: HeroContent = {
   title: 'Tools for real traders.',
   subtitle: 'We build market tools that respect capital and context.',
   cta: { text: 'Explore the suite', href: '/products' },

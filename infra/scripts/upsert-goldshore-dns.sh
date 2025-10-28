@@ -56,16 +56,16 @@ main() {
     exit 1
   fi
 
-  declare -A targets=(
-    ["$ZONE_NAME"]="goldshore-org.pages.dev"
-    ["www.$ZONE_NAME"]="goldshore-org.pages.dev"
-    ["preview.$ZONE_NAME"]="goldshore-org-preview.pages.dev"
-    ["dev.$ZONE_NAME"]="goldshore-org-dev.pages.dev"
+  local -a records=(
+    "$ZONE_NAME CNAME goldshore-org.pages.dev"
+    "www.$ZONE_NAME CNAME goldshore-org.pages.dev"
+    "preview.$ZONE_NAME CNAME goldshore-org-preview.pages.dev"
+    "dev.$ZONE_NAME CNAME goldshore-org-dev.pages.dev"
   )
 
-  local hosts=("$ZONE_NAME" "www.$ZONE_NAME" "preview.$ZONE_NAME" "dev.$ZONE_NAME")
-  for host in "${hosts[@]}"; do
-    upsert_record "$zone" "$host" "CNAME" "${targets[$host]}" true
+  for entry in "${records[@]}"; do
+    read -r host type target <<<"$entry"
+    upsert_record "$zone" "$host" "$type" "$target" true
   done
 }
 
