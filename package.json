@@ -5,9 +5,9 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "cf:deploy:prod": "wrangler deploy --env=production",
-    "cf:deploy:preview": "wrangler deploy --env=preview",
-    "cf:deploy:dev": "wrangler deploy --env=dev"
+    "cf:deploy:prod": "wrangler deploy --config wrangler.worker.toml --env=production",
+    "cf:deploy:preview": "wrangler deploy --config wrangler.worker.toml --env=preview",
+    "cf:deploy:dev": "wrangler deploy --config wrangler.worker.toml --env=dev"
   },
   "devDependencies": {
     "wrangler": "^4.42.0"

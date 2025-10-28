@@ -14,6 +14,8 @@ Empowering communities through secure, scalable, and intelligent infrastructure.
 
 Use the "Deploy to Cloudflare" workflow to publish updates on demand by selecting the desired environment. API hostnames such as `api.goldshore.org` stay mapped to their dedicated services and are intentionally excluded from the router worker routes, so only the explicitly listed marketing hosts are proxied through the worker.
 
+The Worker router configuration now lives in `wrangler.worker.toml`, while `wrangler.toml` configures the Cloudflare Pages project (build output directory, compatibility date, etc.) so deployments no longer mix settings across the two products.
+
 ## Environment configuration
 
 The `/api/contact` Pages Function depends on two environment variables:
@@ -24,7 +26,7 @@ The `/api/contact` Pages Function depends on two environment variables:
 | `TURNSTILE_SECRET` | Server-side Turnstile verification secret | `wrangler secret put TURNSTILE_SECRET` (or add to `.dev.vars`) |
 | `OPENAI_API_KEY` | Authenticates calls to the `/api/gpt` handler | `wrangler secret put OPENAI_API_KEY` (or add to `.dev.vars`) |
 | `GPT_PROXY_TOKEN` | Shared secret browsers must send when calling `/api/gpt` | `wrangler secret put GPT_PROXY_TOKEN` (or add to `.dev.vars`) |
-| `GPT_ALLOWED_ORIGINS` | Comma-separated list of origins that receive CORS access | Define in `wrangler.toml` (`[vars]`) or add to `.dev.vars` |
+| `GPT_ALLOWED_ORIGINS` | Comma-separated list of origins that receive CORS access | Define in `wrangler.worker.toml` (`[vars]`) or add to `.dev.vars` |
 
 Values added with `wrangler secret put` are encrypted and **not** committed to the repository. When running `wrangler pages dev` locally you can copy `.dev.vars.example` to `.dev.vars` and provide temporary development credentials. The public Turnstile site key used in the homepage markup can remain versioned because it is intentionally exposed to browsers.
 
