@@ -3,152 +3,193 @@ set -euo pipefail
 
 if [[ -z "${CF_API_TOKEN:-}" ]]; then
   echo "CF_API_TOKEN environment variable must be set" >&2
-  echo "CF_API_TOKEN is required" >&2
+  exit 1
+fi
+
+if [[ -z "${CF_ACCOUNT_ID:-}" ]]; then
+  echo "CF_ACCOUNT_ID environment variable must be set" >&2
   exit 1
 fi
 
 API="https://api.cloudflare.com/client/v4"
-ZONE_NAMES=${ZONE_NAMES:-${ZONE_NAME:-goldshore.org}}
-DEFAULT_ADMIN_PAGES_HOST=${ADMIN_PAGES_HOST:-goldshore-org.pages.dev}
-DEFAULT_WEB_PAGES_HOST=${WEB_PAGES_HOST:-goldshore-org.pages.dev}
-DEFAULT_API_WORKER_HOST=${API_WORKER_HOST:-}
+AUTH_HEADER=("-H" "Authorization: Bearer ${CF_API_TOKEN}" "-H" "Content-Type: application/json")
 
-zones=()
+CONFIG=$(cat <<'JSON'
+[
+  {
+    "zone": "goldshore.org",
+    "records": [
+      {"type": "CNAME", "name": "goldshore.org", "content": "goldshore-org.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "www.goldshore.org", "content": "goldshore.org", "proxied": true},
+      {"type": "CNAME", "name": "preview.goldshore.org", "content": "goldshore-org-preview.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "dev.goldshore.org", "content": "goldshore-org-dev.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "admin.goldshore.org", "content": "goldshore-admin.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "web.goldshore.org", "content": "goldshore-org.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "*.goldshore.org", "content": "goldshore.org", "proxied": true},
+      {"type": "A", "name": "api.goldshore.org", "content": "192.0.2.1", "proxied": true},
+      {"type": "AAAA", "name": "api.goldshore.org", "content": "100::", "proxied": true}
+    ]
+  },
+  {
+    "zone": "goldshore.foundation",
+    "records": [
+      {"type": "CNAME", "name": "goldshore.foundation", "content": "goldshore-org.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "www.goldshore.foundation", "content": "goldshore.foundation", "proxied": true},
+      {"type": "CNAME", "name": "admin.goldshore.foundation", "content": "goldshore-admin.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "*.goldshore.foundation", "content": "goldshore.foundation", "proxied": true},
+      {"type": "CNAME", "name": "web.goldshore.foundation", "content": "goldshore-org.pages.dev", "proxied": true},
+      {"type": "A", "name": "api.goldshore.foundation", "content": "192.0.2.1", "proxied": true},
+      {"type": "AAAA", "name": "api.goldshore.foundation", "content": "100::", "proxied": true}
+    ]
+  },
+  {
+    "zone": "goldshorefoundation.org",
+    "records": [
+      {"type": "CNAME", "name": "goldshorefoundation.org", "content": "goldshore-org.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "www.goldshorefoundation.org", "content": "goldshorefoundation.org", "proxied": true},
+      {"type": "CNAME", "name": "admin.goldshorefoundation.org", "content": "goldshore-admin.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "*.goldshorefoundation.org", "content": "goldshorefoundation.org", "proxied": true},
+      {"type": "CNAME", "name": "web.goldshorefoundation.org", "content": "goldshore-org.pages.dev", "proxied": true},
+      {"type": "A", "name": "api.goldshorefoundation.org", "content": "192.0.2.1", "proxied": true},
+      {"type": "AAAA", "name": "api.goldshorefoundation.org", "content": "100::", "proxied": true}
+    ]
+  },
+  {
+    "zone": "fortune-fund.com",
+    "records": [
+      {"type": "CNAME", "name": "fortune-fund.com", "content": "goldshore-org.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "www.fortune-fund.com", "content": "fortune-fund.com", "proxied": true},
+      {"type": "CNAME", "name": "admin.fortune-fund.com", "content": "goldshore-admin.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "*.fortune-fund.com", "content": "fortune-fund.com", "proxied": true},
+      {"type": "CNAME", "name": "web.fortune-fund.com", "content": "goldshore-org.pages.dev", "proxied": true},
+      {"type": "A", "name": "api.fortune-fund.com", "content": "192.0.2.1", "proxied": true},
+      {"type": "AAAA", "name": "api.fortune-fund.com", "content": "100::", "proxied": true}
+    ]
+  },
+  {
+    "zone": "fortune-fund.games",
+    "records": [
+      {"type": "CNAME", "name": "fortune-fund.games", "content": "goldshore-org.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "www.fortune-fund.games", "content": "fortune-fund.games", "proxied": true},
+      {"type": "CNAME", "name": "admin.fortune-fund.games", "content": "goldshore-admin.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "*.fortune-fund.games", "content": "fortune-fund.games", "proxied": true},
+      {"type": "CNAME", "name": "web.fortune-fund.games", "content": "goldshore-org.pages.dev", "proxied": true},
+      {"type": "A", "name": "api.fortune-fund.games", "content": "192.0.2.1", "proxied": true},
+      {"type": "AAAA", "name": "api.fortune-fund.games", "content": "100::", "proxied": true}
+    ]
+  }
+]
+JSON
+)
 
-parse_zone_names() {
-  local IFS=','
-  read -r -a zones <<< "$ZONE_NAMES"
+upsert_record() {
+  local zone_id="$1"
+  local record_json="$2"
+
+  local type name content proxied ttl priority comment
+  type=$(echo "$record_json" | jq -r '.type')
+  name=$(echo "$record_json" | jq -r '.name')
+  content=$(echo "$record_json" | jq -r '.content')
+  proxied=$(echo "$record_json" | jq -r '.proxied // empty')
+  ttl=$(echo "$record_json" | jq -r '.ttl // empty')
+  priority=$(echo "$record_json" | jq -r '.priority // empty')
+  comment=$(echo "$record_json" | jq -r '.comment // empty')
+
+  local encoded_name
+  encoded_name=$(jq -rn --arg name "$name" '$name|@uri')
+
+  local query
+  query=$(curl -sS -X GET "${API}/zones/${zone_id}/dns_records?name=${encoded_name}" "${AUTH_HEADER[@]}")
+  local name="$2"
+  local type="$3"
+  local content="$4"
+  local proxied="$5"
+
+  local query
+  query=$(curl -sS -X GET "${API}/zones/${zone_id}/dns_records?name=${name}" "${AUTH_HEADER[@]}")
+  if [[ $(echo "$query" | jq -r '.success') != "true" ]]; then
+    echo "Failed to query records for ${name}" >&2
+    echo "$query" >&2
+    return 1
+  fi
+
+  local record_id
+  record_id=$(echo "$query" | jq -r --arg type "$type" '.result[]? | select(.type == $type) | .id' | head -n1)
+
+  local conflicts
+  conflicts=$(echo "$query" | jq -r --arg type "$type" '
+    (.result // [])
+    | map(select((($type == "CNAME" and .type != "CNAME") or ($type != "CNAME" and .type == "CNAME"))))
+    | .[]?
+    | "\(.id) \(.type)"
+  ')
+
+  if [[ -n "$conflicts" ]]; then
+    while read -r conflict_id conflict_type; do
+      [[ -z "$conflict_id" ]] && continue
+      echo "Removing conflicting ${conflict_type} record for ${name}" >&2
+      curl -sS -X DELETE "${API}/zones/${zone_id}/dns_records/${conflict_id}" "${AUTH_HEADER[@]}" >/dev/null
+    done <<< "$conflicts"
+  fi
+
+  local payload
+  payload=$(jq -n \
+    --arg type "$type" \
+    --arg name "$name" \
+    --arg content "$content" \
+    '{type:$type, name:$name, content:$content, ttl:1}'
+  )
+
+  # TTL of 1 is "automatic" in Cloudflare; allow overrides when provided.
+  if [[ -n "$ttl" && "$ttl" != "null" ]]; then
+    payload=$(echo "$payload" | jq --argjson ttl "$ttl" '.ttl = $ttl')
+  fi
+
+  # Only include proxied when explicitly set and allowed for the record type.
+  if [[ -n "$proxied" && "$proxied" != "null" && "$type" =~ ^(A|AAAA|CNAME)$ ]]; then
+    payload=$(echo "$payload" | jq --argjson proxied "$proxied" '.proxied = $proxied')
+  fi
+
+  if [[ -n "$priority" && "$priority" != "null" ]]; then
+    payload=$(echo "$payload" | jq --argjson priority "$priority" '.priority = $priority')
+  fi
+
+  if [[ -n "$comment" && "$comment" != "null" ]]; then
+    payload=$(echo "$payload" | jq --arg comment "$comment" '.comment = $comment')
+  fi
+
+    --argjson proxied "$proxied" \
+    '{type:$type, name:$name, content:$content, proxied:$proxied, ttl:1}'
+  )
+
+  if [[ -n "$record_id" ]]; then
+    curl -sS -X PUT "${API}/zones/${zone_id}/dns_records/${record_id}" "${AUTH_HEADER[@]}" --data "$payload" >/dev/null
+    echo "Updated ${type} record for ${name}" >&2
+  else
+    curl -sS -X POST "${API}/zones/${zone_id}/dns_records" "${AUTH_HEADER[@]}" --data "$payload" >/dev/null
+    echo "Created ${type} record for ${name}" >&2
+  fi
 }
 
-parse_zone_names
-
-for raw_zone in "${zones[@]}"; do
-  zone_name=$(echo "$raw_zone" | xargs)
-  [[ -z "$zone_name" ]] && continue
-
-  zone_key=$(echo "$zone_name" | tr '[:lower:]' '[:upper:]' | sed 's/[^A-Z0-9]/_/g')
-  zone_id_var="CF_ZONE_ID_${zone_key}"
-  admin_host_var="ADMIN_PAGES_HOST_${zone_key}"
-  web_host_var="WEB_PAGES_HOST_${zone_key}"
-  api_host_var="API_WORKER_HOST_${zone_key}"
-
-  zone_id=${!zone_id_var:-}
-  admin_host=${!admin_host_var:-$DEFAULT_ADMIN_PAGES_HOST}
-  web_host=${!web_host_var:-$DEFAULT_WEB_PAGES_HOST}
-  api_host=${!api_host_var:-$DEFAULT_API_WORKER_HOST}
-  if [[ -z "$api_host" ]]; then
-    api_host=$zone_name
-  fi
-
-  if [[ -z "$zone_id" && ${#zones[@]} -eq 1 && -n "${CF_ZONE_ID:-}" ]]; then
-    zone_id=$CF_ZONE_ID
-  fi
-
+echo "$CONFIG" | jq -c '.[]' | while read -r zone; do
+  zone_name=$(echo "$zone" | jq -r '.zone')
+  echo "Synchronising zone ${zone_name}" >&2
+  zone_lookup=$(curl -sS -X GET "${API}/zones?name=${zone_name}" "${AUTH_HEADER[@]}")
+  zone_id=$(echo "$zone_lookup" | jq -r '.result[0].id // empty')
   if [[ -z "$zone_id" ]]; then
-    zone_id=$(curl -sS -X GET "$API/zones?name=$zone_name" \
-      -H "Authorization: Bearer $CF_API_TOKEN" \
-      -H "Content-Type: application/json" | jq -r '.result[0].id // ""')
+    echo "Unable to resolve zone id for ${zone_name}" >&2
+    continue
   fi
 
-  if [[ -z "$zone_id" ]]; then
-    echo "Unable to resolve zone id for $zone_name" >&2
-    exit 1
-  fi
-
-  records=$(jq -n \
-    --arg zone "$zone_name" \
-    --arg admin "$admin_host" \
-    --arg api "$api_host" \
-    --arg web "$web_host" '[
-      {name:$zone, type:"A", content:"192.0.2.1", proxied:true},
-      {name:$zone, type:"AAAA", content:"100::", proxied:true},
-      {name:"www." + $zone, type:"CNAME", content:$zone, proxied:true},
-      {name:"preview." + $zone, type:"CNAME", content:$zone, proxied:true},
-      {name:"dev." + $zone, type:"CNAME", content:$zone, proxied:true},
-      {name:"admin." + $zone, type:"CNAME", content:$admin, proxied:true},
-      {name:"api." + $zone, type:"CNAME", content:$api, proxied:true},
-      {name:"web." + $zone, type:"CNAME", content:$web, proxied:true}
-    ]')
-
-  echo "Syncing DNS records for zone $zone_name ($zone_id)"
-
-  while IFS= read -r record; do
-    name=$(echo "$record" | jq -r '.name')
+  echo "$zone" | jq -c '.records[]' | while read -r record; do
+    upsert_record "$zone_id" "$record"
     type=$(echo "$record" | jq -r '.type')
+    name=$(echo "$record" | jq -r '.name')
     content=$(echo "$record" | jq -r '.content')
     proxied=$(echo "$record" | jq '.proxied // false')
+    upsert_record "$zone_id" "$name" "$type" "$content" "$proxied"
+  done
 
-    existing=$(curl -sS -X GET "$API/zones/$zone_id/dns_records?name=$name" \
-      -H "Authorization: Bearer $CF_API_TOKEN" \
-      -H "Content-Type: application/json")
-    if [[ $(echo "$existing" | jq -r '.success') != "true" ]]; then
-      echo "Failed to query DNS records for $name" >&2
-      echo "$existing" >&2
-      exit 1
-    fi
-
-    record_id=$(echo "$existing" | jq -r --arg type "$type" '
-      (.result // [])
-      | map(select(.type == $type) | .id)
-      | (.[0] // "")
-    ')
-    conflicts=$(echo "$existing" | jq -r --arg type "$type" '
-      (.result // [])
-      | map(select(
-          ($type == "CNAME" and .type != "CNAME")
-          or
-          ($type != "CNAME" and .type == "CNAME")
-        ))
-      | .[]?
-      | "\(.id) \(.type)"
-    ')
-
-    if [[ -n "$conflicts" ]]; then
-      while read -r conflict_id conflict_type; do
-        [[ -z "$conflict_id" ]] && continue
-        response=$(curl -sS -X DELETE "$API/zones/$zone_id/dns_records/$conflict_id" \
-          -H "Authorization: Bearer $CF_API_TOKEN" \
-          -H "Content-Type: application/json")
-        if [[ $(echo "$response" | jq -r '.success') != "true" ]]; then
-          echo "Failed to delete conflicting $conflict_type record for $name" >&2
-          echo "$response" >&2
-          exit 1
-        fi
-        echo "Deleted conflicting $conflict_type record for $name"
-      done <<< "$conflicts"
-    fi
-
-    payload=$(jq -n \
-      --arg type "$type" \
-      --arg name "$name" \
-      --arg content "$content" \
-      --argjson proxied "$proxied" '{type:$type,name:$name,content:$content,proxied:$proxied,ttl:1}')
-
-    if [[ -z "$record_id" ]]; then
-      response=$(curl -sS -X POST "$API/zones/$zone_id/dns_records" \
-        -H "Authorization: Bearer $CF_API_TOKEN" \
-        -H "Content-Type: application/json" \
-        --data "$payload")
-      if [[ $(echo "$response" | jq -r '.success') != "true" ]]; then
-        echo "Failed to create $type record for $name" >&2
-        echo "$response" >&2
-        exit 1
-      fi
-      echo "Created $type record for $name"
-    else
-      response=$(curl -sS -X PUT "$API/zones/$zone_id/dns_records/$record_id" \
-        -H "Authorization: Bearer $CF_API_TOKEN" \
-        -H "Content-Type: application/json" \
-        --data "$payload")
-      if [[ $(echo "$response" | jq -r '.success') != "true" ]]; then
-        echo "Failed to update $type record for $name" >&2
-        echo "$response" >&2
-        exit 1
-      fi
-      echo "Updated $type record for $name"
-    fi
-
-  done < <(echo "$records" | jq -c '.[]')
-
-  echo "DNS synchronized for $zone_name."
 done
+
+echo "DNS synchronisation complete."
