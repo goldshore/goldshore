@@ -37,6 +37,7 @@ CONFIG=$(cat <<'JSON'
       {"type": "CNAME", "name": "www.goldshore.foundation", "content": "goldshore.foundation", "proxied": true},
       {"type": "CNAME", "name": "admin.goldshore.foundation", "content": "goldshore-admin.pages.dev", "proxied": true},
       {"type": "CNAME", "name": "*.goldshore.foundation", "content": "goldshore.foundation", "proxied": true},
+      {"type": "CNAME", "name": "web.goldshore.foundation", "content": "goldshore-org.pages.dev", "proxied": true},
       {"type": "A", "name": "api.goldshore.foundation", "content": "192.0.2.1", "proxied": true},
       {"type": "AAAA", "name": "api.goldshore.foundation", "content": "100::", "proxied": true}
     ]
@@ -48,6 +49,7 @@ CONFIG=$(cat <<'JSON'
       {"type": "CNAME", "name": "www.goldshorefoundation.org", "content": "goldshorefoundation.org", "proxied": true},
       {"type": "CNAME", "name": "admin.goldshorefoundation.org", "content": "goldshore-admin.pages.dev", "proxied": true},
       {"type": "CNAME", "name": "*.goldshorefoundation.org", "content": "goldshorefoundation.org", "proxied": true},
+      {"type": "CNAME", "name": "web.goldshorefoundation.org", "content": "goldshore-org.pages.dev", "proxied": true},
       {"type": "A", "name": "api.goldshorefoundation.org", "content": "192.0.2.1", "proxied": true},
       {"type": "AAAA", "name": "api.goldshorefoundation.org", "content": "100::", "proxied": true}
     ]
@@ -59,6 +61,7 @@ CONFIG=$(cat <<'JSON'
       {"type": "CNAME", "name": "www.fortune-fund.com", "content": "fortune-fund.com", "proxied": true},
       {"type": "CNAME", "name": "admin.fortune-fund.com", "content": "goldshore-admin.pages.dev", "proxied": true},
       {"type": "CNAME", "name": "*.fortune-fund.com", "content": "fortune-fund.com", "proxied": true},
+      {"type": "CNAME", "name": "web.fortune-fund.com", "content": "goldshore-org.pages.dev", "proxied": true},
       {"type": "A", "name": "api.fortune-fund.com", "content": "192.0.2.1", "proxied": true},
       {"type": "AAAA", "name": "api.fortune-fund.com", "content": "100::", "proxied": true}
     ]
@@ -70,6 +73,7 @@ CONFIG=$(cat <<'JSON'
       {"type": "CNAME", "name": "www.fortune-fund.games", "content": "fortune-fund.games", "proxied": true},
       {"type": "CNAME", "name": "admin.fortune-fund.games", "content": "goldshore-admin.pages.dev", "proxied": true},
       {"type": "CNAME", "name": "*.fortune-fund.games", "content": "fortune-fund.games", "proxied": true},
+      {"type": "CNAME", "name": "web.fortune-fund.games", "content": "goldshore-org.pages.dev", "proxied": true},
       {"type": "A", "name": "api.fortune-fund.games", "content": "192.0.2.1", "proxied": true},
       {"type": "AAAA", "name": "api.fortune-fund.games", "content": "100::", "proxied": true}
     ]
@@ -96,6 +100,13 @@ upsert_record() {
 
   local query
   query=$(curl -sS -X GET "${API}/zones/${zone_id}/dns_records?name=${encoded_name}" "${AUTH_HEADER[@]}")
+  local name="$2"
+  local type="$3"
+  local content="$4"
+  local proxied="$5"
+
+  local query
+  query=$(curl -sS -X GET "${API}/zones/${zone_id}/dns_records?name=${name}" "${AUTH_HEADER[@]}")
   if [[ $(echo "$query" | jq -r '.success') != "true" ]]; then
     echo "Failed to query records for ${name}" >&2
     echo "$query" >&2
@@ -147,6 +158,10 @@ upsert_record() {
     payload=$(echo "$payload" | jq --arg comment "$comment" '.comment = $comment')
   fi
 
+    --argjson proxied "$proxied" \
+    '{type:$type, name:$name, content:$content, proxied:$proxied, ttl:1}'
+  )
+
   if [[ -n "$record_id" ]]; then
     curl -sS -X PUT "${API}/zones/${zone_id}/dns_records/${record_id}" "${AUTH_HEADER[@]}" --data "$payload" >/dev/null
     echo "Updated ${type} record for ${name}" >&2
@@ -168,6 +183,11 @@ echo "$CONFIG" | jq -c '.[]' | while read -r zone; do
 
   echo "$zone" | jq -c '.records[]' | while read -r record; do
     upsert_record "$zone_id" "$record"
+    type=$(echo "$record" | jq -r '.type')
+    name=$(echo "$record" | jq -r '.name')
+    content=$(echo "$record" | jq -r '.content')
+    proxied=$(echo "$record" | jq '.proxied // false')
+    upsert_record "$zone_id" "$name" "$type" "$content" "$proxied"
   done
 
 done
