@@ -25,6 +25,7 @@ CONFIG=$(cat <<'JSON'
       {"type": "CNAME", "name": "dev.goldshore.org", "content": "goldshore-org-dev.pages.dev", "proxied": true},
       {"type": "CNAME", "name": "admin.goldshore.org", "content": "goldshore-admin.pages.dev", "proxied": true},
       {"type": "CNAME", "name": "web.goldshore.org", "content": "goldshore-org.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "*.goldshore.org", "content": "goldshore.org", "proxied": true},
       {"type": "A", "name": "api.goldshore.org", "content": "192.0.2.1", "proxied": true},
       {"type": "AAAA", "name": "api.goldshore.org", "content": "100::", "proxied": true}
     ]
@@ -35,6 +36,7 @@ CONFIG=$(cat <<'JSON'
       {"type": "CNAME", "name": "goldshore.foundation", "content": "goldshore-org.pages.dev", "proxied": true},
       {"type": "CNAME", "name": "www.goldshore.foundation", "content": "goldshore.foundation", "proxied": true},
       {"type": "CNAME", "name": "admin.goldshore.foundation", "content": "goldshore-admin.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "*.goldshore.foundation", "content": "goldshore.foundation", "proxied": true},
       {"type": "CNAME", "name": "web.goldshore.foundation", "content": "goldshore-org.pages.dev", "proxied": true},
       {"type": "A", "name": "api.goldshore.foundation", "content": "192.0.2.1", "proxied": true},
       {"type": "AAAA", "name": "api.goldshore.foundation", "content": "100::", "proxied": true}
@@ -46,6 +48,7 @@ CONFIG=$(cat <<'JSON'
       {"type": "CNAME", "name": "goldshorefoundation.org", "content": "goldshore-org.pages.dev", "proxied": true},
       {"type": "CNAME", "name": "www.goldshorefoundation.org", "content": "goldshorefoundation.org", "proxied": true},
       {"type": "CNAME", "name": "admin.goldshorefoundation.org", "content": "goldshore-admin.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "*.goldshorefoundation.org", "content": "goldshorefoundation.org", "proxied": true},
       {"type": "CNAME", "name": "web.goldshorefoundation.org", "content": "goldshore-org.pages.dev", "proxied": true},
       {"type": "A", "name": "api.goldshorefoundation.org", "content": "192.0.2.1", "proxied": true},
       {"type": "AAAA", "name": "api.goldshorefoundation.org", "content": "100::", "proxied": true}
@@ -57,6 +60,7 @@ CONFIG=$(cat <<'JSON'
       {"type": "CNAME", "name": "fortune-fund.com", "content": "goldshore-org.pages.dev", "proxied": true},
       {"type": "CNAME", "name": "www.fortune-fund.com", "content": "fortune-fund.com", "proxied": true},
       {"type": "CNAME", "name": "admin.fortune-fund.com", "content": "goldshore-admin.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "*.fortune-fund.com", "content": "fortune-fund.com", "proxied": true},
       {"type": "CNAME", "name": "web.fortune-fund.com", "content": "goldshore-org.pages.dev", "proxied": true},
       {"type": "A", "name": "api.fortune-fund.com", "content": "192.0.2.1", "proxied": true},
       {"type": "AAAA", "name": "api.fortune-fund.com", "content": "100::", "proxied": true}
@@ -68,6 +72,7 @@ CONFIG=$(cat <<'JSON'
       {"type": "CNAME", "name": "fortune-fund.games", "content": "goldshore-org.pages.dev", "proxied": true},
       {"type": "CNAME", "name": "www.fortune-fund.games", "content": "fortune-fund.games", "proxied": true},
       {"type": "CNAME", "name": "admin.fortune-fund.games", "content": "goldshore-admin.pages.dev", "proxied": true},
+      {"type": "CNAME", "name": "*.fortune-fund.games", "content": "fortune-fund.games", "proxied": true},
       {"type": "CNAME", "name": "web.fortune-fund.games", "content": "goldshore-org.pages.dev", "proxied": true},
       {"type": "A", "name": "api.fortune-fund.games", "content": "192.0.2.1", "proxied": true},
       {"type": "AAAA", "name": "api.fortune-fund.games", "content": "100::", "proxied": true}
@@ -79,6 +84,22 @@ JSON
 
 upsert_record() {
   local zone_id="$1"
+  local record_json="$2"
+
+  local type name content proxied ttl priority comment
+  type=$(echo "$record_json" | jq -r '.type')
+  name=$(echo "$record_json" | jq -r '.name')
+  content=$(echo "$record_json" | jq -r '.content')
+  proxied=$(echo "$record_json" | jq -r '.proxied // empty')
+  ttl=$(echo "$record_json" | jq -r '.ttl // empty')
+  priority=$(echo "$record_json" | jq -r '.priority // empty')
+  comment=$(echo "$record_json" | jq -r '.comment // empty')
+
+  local encoded_name
+  encoded_name=$(jq -rn --arg name "$name" '$name|@uri')
+
+  local query
+  query=$(curl -sS -X GET "${API}/zones/${zone_id}/dns_records?name=${encoded_name}" "${AUTH_HEADER[@]}")
   local name="$2"
   local type="$3"
   local content="$4"
@@ -116,6 +137,27 @@ upsert_record() {
     --arg type "$type" \
     --arg name "$name" \
     --arg content "$content" \
+    '{type:$type, name:$name, content:$content, ttl:1}'
+  )
+
+  # TTL of 1 is "automatic" in Cloudflare; allow overrides when provided.
+  if [[ -n "$ttl" && "$ttl" != "null" ]]; then
+    payload=$(echo "$payload" | jq --argjson ttl "$ttl" '.ttl = $ttl')
+  fi
+
+  # Only include proxied when explicitly set and allowed for the record type.
+  if [[ -n "$proxied" && "$proxied" != "null" && "$type" =~ ^(A|AAAA|CNAME)$ ]]; then
+    payload=$(echo "$payload" | jq --argjson proxied "$proxied" '.proxied = $proxied')
+  fi
+
+  if [[ -n "$priority" && "$priority" != "null" ]]; then
+    payload=$(echo "$payload" | jq --argjson priority "$priority" '.priority = $priority')
+  fi
+
+  if [[ -n "$comment" && "$comment" != "null" ]]; then
+    payload=$(echo "$payload" | jq --arg comment "$comment" '.comment = $comment')
+  fi
+
     --argjson proxied "$proxied" \
     '{type:$type, name:$name, content:$content, proxied:$proxied, ttl:1}'
   )
@@ -140,6 +182,7 @@ echo "$CONFIG" | jq -c '.[]' | while read -r zone; do
   fi
 
   echo "$zone" | jq -c '.records[]' | while read -r record; do
+    upsert_record "$zone_id" "$record"
     type=$(echo "$record" | jq -r '.type')
     name=$(echo "$record" | jq -r '.name')
     content=$(echo "$record" | jq -r '.content')

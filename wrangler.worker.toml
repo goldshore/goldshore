@@ -12,6 +12,15 @@ DEV_ASSETS = "https://goldshore-org-dev.pages.dev"
 
 [env.production]
 routes = [
+  { pattern = "goldshore.org/*",     zone_name = "goldshore.org" },
+  { pattern = "www.goldshore.org/*", zone_name = "goldshore.org" }
+]
+
+[env.preview]
+routes = [{ pattern = "preview.goldshore.org/*", zone_name = "goldshore.org" }]
+
+[env.dev]
+routes = [{ pattern = "dev.goldshore.org/*", zone_name = "goldshore.org" }]
   { pattern = "goldshore.org/*",             zone_name = "goldshore.org" },
   { pattern = "www.goldshore.org/*",         zone_name = "goldshore.org" },
   { pattern = "admin.goldshore.org/*",       zone_name = "goldshore.org" },
