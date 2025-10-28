@@ -49,6 +49,9 @@ function jsonResponse(body, init = {}, corsOrigin = null) {
   headers.set("Access-Control-Allow-Methods", ALLOWED_METHODS);
   headers.set("Access-Control-Allow-Headers", ALLOWED_HEADERS);
 
+
+  const headers = new Headers(init.headers);
+
   return headers;
 }
 
@@ -122,24 +125,7 @@ function validateOrigin(request, env) {
 
   const allowedOrigin = resolveAllowedOrigin(requestOrigin, allowedOrigins);
   if (!allowedOrigin) {
-    return {
-      ok: false,
-      response: errorResponse("Origin not allowed.", 403, undefined, requestOrigin),
-  if (!allowedOrigins.includes(requestOrigin)) {
-    return {
-      ok: false,
-      response: jsonResponse({ error: "Origin not allowed." }, { status: 403 }),
-    };
-  }
-
   return { ok: true, origin: allowedOrigin };
-}
-
-function getExpectedSecret(env) {
-  return env.GPT_SHARED_SECRET ?? env.GPT_PROXY_SECRET ?? null;
-}
-
-function extractProvidedToken(request) {
   const authorization = request.headers.get("Authorization");
   const bearerToken = extractBearerToken(authorization);
   if (bearerToken) {
