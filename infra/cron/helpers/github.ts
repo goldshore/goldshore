@@ -84,7 +84,9 @@ export async function createFixBranchAndPR(
   await gh.rest.git.updateRef({ owner, repo, ref: `heads/${head}`, sha: commit.data.sha, force: true });
 
   if (existingPR) {
-    return existingPR;
+    await gh.rest.pulls.update({ owner, repo, pull_number: existingPR.number, title, body });
+    const refreshed = await gh.rest.pulls.get({ owner, repo, pull_number: existingPR.number });
+    return refreshed.data;
   }
 
   const pr = await gh.rest.pulls.create({ owner, repo, head, base, title, body });
