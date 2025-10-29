@@ -34,3 +34,54 @@ export async function getWorkerBindings(script: string) {
   type Binding = { name: string; type: string };
   return await cfFetch<Binding[]>(`/accounts/${acc}/workers/scripts/${script}/bindings`);
 }
+
+type WorkerRoute = { pattern: string };
+
+function pickPrimaryRoute(routes: WorkerRoute[]): WorkerRoute {
+  if (routes.length === 1) return routes[0];
+  const scored = routes
+    .map((route, index) => {
+      const pattern = route.pattern.toLowerCase();
+      const penalty = /preview|dev|staging|test/.test(pattern) ? 1 : 0;
+      return { route, penalty, index };
+    })
+    .sort((a, b) => {
+      if (a.penalty !== b.penalty) return a.penalty - b.penalty;
+      return a.index - b.index;
+    });
+  return scored[0]!.route;
+}
+
+function buildRouteURL(pattern: string, routePath: string): string {
+  let base = pattern;
+  if (!base.includes("://")) base = `https://${base}`;
+  const starIndex = base.indexOf("*");
+  if (starIndex !== -1) {
+    base = base.slice(0, starIndex);
+  }
+  if (!base.endsWith("/")) {
+    base = `${base}/`;
+  }
+  const sanitizedPath = routePath.startsWith("/") ? routePath.slice(1) : routePath;
+  return new URL(sanitizedPath, base).toString();
+}
+
+export async function fetchWorkerRoute(
+  script: string,
+  routePath: string,
+  init?: RequestInitWithHeaders
+): Promise<{ url: string; response: Response }> {
+  const routes = await cfFetch<WorkerRoute[]>(`/accounts/${acc}/workers/scripts/${script}/routes`);
+  if (!routes.length) {
+    throw new Error(`No routes configured for Worker ${script}`);
+  }
+  const route = pickPrimaryRoute(routes);
+  const url = buildRouteURL(route.pattern, routePath);
+  const { headers: initHeaders, ...rest } = init ?? {};
+  const headers: Record<string, string> = {
+    "user-agent": "goldshore-agent/worker-health-check",
+    ...(initHeaders ?? {})
+  };
+  const response = await fetch(url, { ...rest, headers });
+  return { url, response };
+}
