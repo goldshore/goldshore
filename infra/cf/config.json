@@ -1,0 +1,120 @@
+{
+  "$schema": "https://schemas.goldshore.org/cloudflare/account-config-v1.json",
+  "account": {
+    "name": "goldshore",
+    "id": "${CLOUDFLARE_ACCOUNT_ID}"
+  },
+  "zone": {
+    "name": "goldshore.org",
+    "id": "${CLOUDFLARE_ZONE_ID}",
+    "plan": "pro",
+    "vanity_name_servers": [
+      "abby.ns.cloudflare.com",
+      "brad.ns.cloudflare.com"
+    ]
+  },
+  "environments": {
+    "production": {
+      "pages_project": "goldshore-web",
+      "worker": "goldshore-api",
+      "route": "goldshore.org/*",
+      "notes": "Primary public site served by the Worker routing to the Pages project."
+    },
+    "preview": {
+      "pages_project": "goldshore-web",
+      "worker": "goldshore-api",
+      "route": "preview.goldshore.org/*",
+      "notes": "Stakeholder previews mapped to preview Pages deployments."
+    },
+    "development": {
+      "pages_project": "goldshore-web",
+      "worker": "goldshore-api",
+      "route": "dev.goldshore.org/*",
+      "notes": "Internal developer sandbox."
+    }
+  },
+  "pages_projects": [
+    {
+      "name": "goldshore-web",
+      "production_branch": "main",
+      "preview_branches": [
+        "preview",
+        "develop"
+      ],
+      "deployment_configs": {
+        "production": {
+          "compatibility_date": "2024-02-19",
+          "environment_variables": {
+            "NODE_VERSION": "20",
+            "WORKER_HOSTNAME": "goldshore.org"
+          }
+        },
+        "preview": {
+          "compatibility_date": "2024-02-19",
+          "environment_variables": {
+            "WORKER_HOSTNAME": "preview.goldshore.org"
+          }
+        }
+      }
+    },
+    {
+      "name": "goldshore-admin",
+      "production_branch": "main",
+      "preview_branches": [
+        "admin-preview"
+      ],
+      "deployment_configs": {
+        "production": {
+          "compatibility_date": "2024-02-19",
+          "environment_variables": {
+            "WORKER_HOSTNAME": "admin.goldshore.org",
+            "ACCESS_APP_AUD": "goldshore-admin"
+          }
+        },
+        "preview": {
+          "compatibility_date": "2024-02-19",
+          "environment_variables": {
+            "WORKER_HOSTNAME": "admin-preview.goldshore.org"
+          }
+        }
+      }
+    }
+  ],
+  "workers": [
+    {
+      "name": "goldshore-api",
+      "main_entrypoint": "apps/api-router/dist/worker.js",
+      "compatibility_date": "2024-02-19",
+      "routes": [
+        "goldshore.org/*",
+        "preview.goldshore.org/*",
+        "dev.goldshore.org/*"
+      ],
+      "bindings": {
+        "KV": [],
+        "D1": [
+          {
+            "binding": "GOLDSHORE_DB",
+            "database": "goldshore"
+          }
+        ],
+        "R2": [],
+        "vars": {
+          "PRODUCTION_ASSETS": "https://goldshore-web.pages.dev",
+          "PREVIEW_ASSETS": "https://goldshore-web-preview.pages.dev",
+          "DEV_ASSETS": "https://goldshore-web-dev.pages.dev"
+        }
+      }
+    }
+  ],
+  "access_applications": [
+    {
+      "name": "Goldshore Admin",
+      "domain": "admin.goldshore.org",
+      "aud": "goldshore-admin",
+      "policies": [
+        "infra/policies/cloudflare/pages.goldshore-admin.json"
+      ]
+    }
+  ]
+}
