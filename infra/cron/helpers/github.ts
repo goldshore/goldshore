@@ -33,7 +33,27 @@ export async function createFixBranchAndPR(
   const baseRef = await gh.rest.git.getRef({ owner, repo, ref: `heads/${base}` });
   const baseSha = baseRef.data.object.sha;
 
-  await gh.rest.git.createRef({ owner, repo, ref: `refs/heads/${head}`, sha: baseSha });
+  let headExists = true;
+  try {
+    await gh.rest.git.getRef({ owner, repo, ref: `heads/${head}` });
+  } catch (error: any) {
+    if (error?.status === 404) {
+      headExists = false;
+    } else {
+      throw error;
+    }
+  }
+
+  let existingPR: any | null = null;
+
+  if (!headExists) {
+    await gh.rest.git.createRef({ owner, repo, ref: `refs/heads/${head}`, sha: baseSha });
+  } else {
+    const existingPRs = await gh.rest.pulls.list({ owner, repo, state: "open", head: `${owner}:${head}`, per_page: 1 });
+    if (existingPRs.data.length > 0) {
+      existingPR = existingPRs.data[0];
+    }
+  }
 
   const blobs = await Promise.all(
     changes.map(c =>
@@ -62,6 +82,12 @@ export async function createFixBranchAndPR(
   });
 
   await gh.rest.git.updateRef({ owner, repo, ref: `heads/${head}`, sha: commit.data.sha, force: true });
+
+  if (existingPR) {
+    await gh.rest.pulls.update({ owner, repo, pull_number: existingPR.number, title, body });
+    const refreshed = await gh.rest.pulls.get({ owner, repo, pull_number: existingPR.number });
+    return refreshed.data;
+  }
 
   const pr = await gh.rest.pulls.create({ owner, repo, head, base, title, body });
   return pr.data;
