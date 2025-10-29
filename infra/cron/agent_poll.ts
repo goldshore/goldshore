@@ -3,7 +3,12 @@ import fs from "node:fs";
 import path from "node:path";
 import YAML from "yaml";
 import { commentOnPR, createFixBranchAndPR, findOpenConflicts, openOpsIssue } from "./helpers/github";
-import { getDNSRecords, getPagesProjectBuildStatus, getWorkerBindings } from "./helpers/cloudflare";
+import {
+  fetchWorkerRoute,
+  getDNSRecords,
+  getPagesProjectBuildStatus,
+  getWorkerBindings
+} from "./helpers/cloudflare";
 
 
 type PagesRule = { repo: string; path: string };
@@ -31,6 +36,45 @@ const org: string = cfg.github.org;
 
 function log(...a: unknown[]) {
   console.log("[agent]", ...a);
+}
+
+function truncate(text: string, limit = 500) {
+  if (text.length <= limit) return text;
+  return `${text.slice(0, limit)}…`;
+}
+
+function formatBodyPreview(body: string) {
+  if (!body) return "\n\n_No response body_";
+  return `\n\n\`\`\`\n${truncate(body, 800)}\n\`\`\``;
+}
+
+async function getWorkerBindingsWarning(script: string) {
+  try {
+    const bindings = await getWorkerBindings(script);
+    if (!Array.isArray(bindings) || bindings.length === 0) {
+      return "Cloudflare API returned no bindings for this Worker. Verify wrangler configuration and deployment.";
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return `Unable to load Worker bindings: ${message}`;
+  }
+  return null;
+}
+
+async function openWorkerHealthIncident(script: string, routePath: string, detail: string) {
+  let body = detail;
+  const bindingsWarning = await getWorkerBindingsWarning(script);
+  if (bindingsWarning) {
+    body += `\n\nBindings warning: ${bindingsWarning}`;
+  }
+  log("Worker health incident", script, detail);
+  await openOpsIssue(
+    org,
+    "goldshore",
+    `Worker health check failed: ${script}`,
+    `Check path: \`${routePath}\`\n\n${body}`,
+    cfg.ai_agent.triage_labels
+  );
 }
 
 async function ensurePagesOutputDirRule() {
@@ -117,14 +161,50 @@ async function checkCloudflare() {
       }
     }
     if (check.type === "worker_health") {
-      const bindings = await getWorkerBindings(check.script);
-      if (!Array.isArray(bindings) || bindings.length === 0) {
-        await openOpsIssue(
-          org,
-          "goldshore",
-          `Worker missing bindings: ${check.script}`,
-          `No bindings returned for Worker \`${check.script}\`. Verify wrangler.toml and deployment.`,
-          cfg.ai_agent.triage_labels
+      try {
+        const { response, url } = await fetchWorkerRoute(check.script, check.path);
+        const bodyText = await response.text();
+        if (!response.ok) {
+          await openWorkerHealthIncident(
+            check.script,
+            check.path,
+            `Health endpoint \`${url}\` returned HTTP ${response.status}.${formatBodyPreview(bodyText)}`
+          );
+          continue;
+        }
+        if (!bodyText) {
+          await openWorkerHealthIncident(
+            check.script,
+            check.path,
+            `Health endpoint \`${url}\` returned an empty body. Expected JSON payload with \`{ ok: true }\`.`
+          );
+          continue;
+        }
+        let payload: unknown;
+        try {
+          payload = JSON.parse(bodyText);
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          await openWorkerHealthIncident(
+            check.script,
+            check.path,
+            `Health endpoint \`${url}\` returned invalid JSON (${message}).${formatBodyPreview(bodyText)}`
+          );
+          continue;
+        }
+        if (!payload || typeof payload !== "object" || (payload as any).ok !== true) {
+          await openWorkerHealthIncident(
+            check.script,
+            check.path,
+            `Health endpoint \`${url}\` reported failure payload.${formatBodyPreview(bodyText)}`
+          );
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        await openWorkerHealthIncident(
+          check.script,
+          check.path,
+          `Failed to reach Worker health endpoint. Error: ${message}`
         );
       }
     }
