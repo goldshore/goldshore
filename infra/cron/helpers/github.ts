@@ -47,8 +47,18 @@ export async function createFixBranchAndPR(
   let existingPR: any | null = null;
 
   if (!headExists) {
-    await gh.rest.git.createRef({ owner, repo, ref: `refs/heads/${head}`, sha: baseSha });
-  } else {
+    try {
+      await gh.rest.git.createRef({ owner, repo, ref: `refs/heads/${head}`, sha: baseSha });
+    } catch (error: any) {
+      if (error?.status === 422) {
+        headExists = true;
+      } else {
+        throw error;
+      }
+    }
+  }
+
+  if (headExists) {
     const existingPRs = await gh.rest.pulls.list({ owner, repo, state: "open", head: `${owner}:${head}`, per_page: 1 });
     if (existingPRs.data.length > 0) {
       existingPR = existingPRs.data[0];
