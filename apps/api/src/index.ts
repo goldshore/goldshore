@@ -16,6 +16,16 @@ const cors = (req: Request, origins: string) => {
   return hdr;
 };
 
+const json = (req: Request, env: Env, data: JsonValue | Record<string, unknown>, status = 200) => {
+  const headers = { "content-type": "application/json", ...cors(req, env.CORS_ORIGINS) };
+  return new Response(JSON.stringify(data), { status, headers });
+};
+
+const empty = (req: Request, env: Env, status = 204) => {
+  const headers = cors(req, env.CORS_ORIGINS);
+  return new Response(null, { status, headers });
+};
+
 import { createCustomer, getCustomer, updateCustomer, deleteCustomer, listCustomers } from "./customers";
 import { createSubscription, getSubscription, updateSubscription, deleteSubscription, listSubscriptions } from "./subscriptions";
 import { setRiskConfig, getRiskConfig, checkRisk, killSwitch } from "./risk";
