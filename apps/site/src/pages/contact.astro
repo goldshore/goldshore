@@ -48,19 +48,21 @@ const sanitizedBuildTimeKey =
       <label for="message">Context</label>
       <textarea id="message" name="message" rows="5" required placeholder="Tell us about the product, timeline, and any material we should review." style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.2); background: rgba(10,15,26,.6); color: var(--fg);"></textarea>
     </div>
-    <div
-      id="turnstile-error"
-      style="display: none; font-size: 0.9rem; text-align: center; color: rgba(255, 180, 180, 0.85);"
-    >
-      Verification is unavailable. Refresh the page or email
-      <a href="mailto:intake@goldshore.org" style="color: inherit; text-decoration: underline;">intake@goldshore.org</a>.
-    </div>
-    <div
-      id="turnstile-wrapper"
-      data-build-sitekey={sanitizedBuildTimeKey}
-      style="display: none; justify-content: center;"
-    >
-      <div id="turnstile-container" class="cf-turnstile" data-theme="dark"></div>
+    <div style="display: grid; gap: 12px;">
+      <div
+        id="turnstile-error"
+        style="display: none; font-size: 0.9rem; text-align: center; color: rgba(255, 180, 180, 0.85);"
+      >
+        Verification is unavailable. Refresh the page or email
+        <a href="mailto:intake@goldshore.org" style="color: inherit; text-decoration: underline;">intake@goldshore.org</a>.
+      </div>
+      <div
+        id="turnstile-wrapper"
+        data-build-sitekey={sanitizedBuildTimeKey}
+        style="display: none; justify-content: center;"
+      >
+        <div id="turnstile-container" class="cf-turnstile" data-theme="dark"></div>
+      </div>
     </div>
     <button class="btn" type="submit">Submit request</button>
   </form>
@@ -75,32 +77,40 @@ const sanitizedBuildTimeKey =
       const container = document.getElementById('turnstile-container');
       const errorMessage = document.getElementById('turnstile-error');
 
-      function showWidgetContainer() {
-        if (wrapper) {
-          wrapper.style.display = 'flex';
-        }
+      if (!container) {
+        return;
       }
 
-      function showErrorMessage() {
+      const showError = () => {
         if (errorMessage) {
           errorMessage.style.display = 'block';
         }
-      }
+      };
 
-      async function ensureTurnstileScript() {
-        if (window.turnstile && typeof window.turnstile.render === 'function') {
-          return window.turnstile;
+      const revealWrapper = () => {
+        if (wrapper) {
+          wrapper.style.display = 'flex';
         }
+      };
 
-        const existing = document.querySelector('script[data-turnstile]');
-        if (existing) {
-          return new Promise((resolve, reject) => {
+      const ensureTurnstileScript = () =>
+        new Promise((resolve, reject) => {
+          if (window.turnstile && typeof window.turnstile.render === 'function') {
+            resolve(window.turnstile);
+            return;
+          }
+
+          const existing =
+            document.querySelector('script[data-turnstile]') ??
+            document.querySelector('script[src="https://challenges.cloudflare.com/turnstile/v0/api.js"]');
+
+          if (existing) {
+            existing.dataset.turnstile = existing.dataset.turnstile || 'true';
             existing.addEventListener('load', () => resolve(window.turnstile), { once: true });
             existing.addEventListener('error', reject, { once: true });
-          });
-        }
+            return;
+          }
 
-        return new Promise((resolve, reject) => {
           const script = document.createElement('script');
           script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
           script.async = true;
@@ -110,10 +120,12 @@ const sanitizedBuildTimeKey =
           script.addEventListener('error', reject, { once: true });
           document.head.appendChild(script);
         });
-      }
 
-      async function resolveSiteKey() {
-        const buildTimeKey = wrapper?.dataset?.buildSitekey;
+      const resolveSiteKey = async () => {
+        const buildTimeKey =
+          typeof wrapper?.dataset?.buildSitekey === 'string'
+            ? wrapper.dataset.buildSitekey.trim()
+            : '';
         if (buildTimeKey && buildTimeKey !== 'undefined') {
           return buildTimeKey;
         }
@@ -127,29 +139,25 @@ const sanitizedBuildTimeKey =
         }
 
         const payload = await response.json();
-        if (!payload || !payload.siteKey) {
+        const siteKey = typeof payload?.siteKey === 'string' ? payload.siteKey.trim() : '';
+
+        if (!siteKey || siteKey === 'undefined') {
           throw new Error('missing site key');
         }
 
-        return payload.siteKey;
-      }
+        return siteKey;
+      };
 
-      async function initTurnstile() {
-        if (!container) {
-          return;
-        }
-
+      const initTurnstile = async () => {
         try {
-          const [siteKey, turnstile] = await Promise.all([
-            resolveSiteKey(),
-            ensureTurnstileScript()
-          ]);
+          const siteKey = await resolveSiteKey();
+          const turnstile = await ensureTurnstileScript();
 
           if (!turnstile || typeof turnstile.render !== 'function') {
             throw new Error('turnstile unavailable');
           }
 
-          showWidgetContainer();
+          revealWrapper();
 
           turnstile.render(container, {
             sitekey: siteKey,
@@ -157,9 +165,9 @@ const sanitizedBuildTimeKey =
           });
         } catch (error) {
           console.error('Failed to initialize Turnstile widget', error);
-          showErrorMessage();
+          showError();
         }
-      }
+      };
 
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initTurnstile, { once: true });
