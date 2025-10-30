@@ -128,7 +128,6 @@ upsert_record() {
     curl -sS -X POST "${API}/zones/${zone_id}/dns_records" "${AUTH_HEADER[@]}" --data "$payload" >/dev/null
     echo "Created ${type} record for ${name}" >&2
   fi
-}
 
 main() {
   local zone_id=$1
