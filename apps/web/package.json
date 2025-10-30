@@ -1,7 +1,7 @@
 {
-  "name": "@goldshore/web",
+  "name": "goldshore-web",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "build": "astro build",
@@ -10,10 +10,27 @@
     "process:images": "node scripts/process-images.mjs"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^11.0.0",
-    "@goldshore/assets": "file:../../packages/assets",
-    "@goldshore/theme": "file:../../packages/theme",
-    "astro": "^4.15.0",
-    "tslib": "^2.8.1"
-  }
+    "astro": "^4.10.2"
+  "name": "@goldshore/web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "astro build",
+    "dev": "astro dev",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "astro": "^4.13.0"
+  "name": "@goldshore/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "astro build",
+    "dev": "astro dev"
+  },
+  "dependencies": {
+    "astro": "^4.15.0"
+  },
+  "packageManager": "npm@11.4.2"
 }

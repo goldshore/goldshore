@@ -1,5 +1,25 @@
 ---
-import Base from "../layouts/Base.astro";
+import "../styles/theme.css";
+
+const hero = {
+  title: "Tools for real traders.",
+  subtitle: "We build market tools that respect capital and context.",
+  cta: { text: "Explore the suite", href: "/products" }
+};
+const year = new Date().getFullYear();
+import '../styles/theme.css';
+
+type HeroContent = {
+  title: string;
+  subtitle: string;
+  cta: { text: string; href: string };
+};
+
+const hero: HeroContent = {
+  title: 'Tools for real traders.',
+  subtitle: 'We build market tools that respect capital and context.',
+  cta: { text: 'Explore the suite', href: '/products' },
+};
 ---
 <Base>
   <main class="mx-auto max-w-6xl p-6">
@@ -9,22 +29,25 @@ import Base from "../layouts/Base.astro";
         <a href="/dash" class="px-4 py-2 rounded bg-[var(--brand)] text-[var(--brand-contrast)]">Launch Dashboard</a>
         <a href="https://api.goldshore.org/v1/docs" class="px-4 py-2 rounded border border-[var(--border)]">View API Docs</a>
       </div>
-    </section>
-    <section id="products" class="grid md:grid-cols-3 gap-4 py-8">
-      <a class="p-4 border rounded" href="https://api.goldshore.org/v1/health">Trading API</a>
-      <a class="p-4 border rounded" href="https://api.goldshore.org/v1/risk/limits">Options & Risk</a>
-      <a class="p-4 border rounded" href="https://admin.goldshore.org">Admin & CRM</a>
-    </section>
-    <section id="pricing" class="grid md:grid-cols-3 gap-4 py-8">
-      <a class="p-4 border rounded" href="/signup?plan=free">Free</a>
-      <a class="p-4 border rounded" href="/signup?plan=pro">Pro</a>
-      <a class="p-4 border rounded" href="/signup?plan=enterprise">Enterprise</a>
-    </section>
-    <section id="contact" class="py-8">
-      <form method="post" action="https://api.goldshore.org/v1/lead" class="flex gap-2">
-        <input name="email" type="email" required placeholder="you@company.com" class="border p-2 rounded flex-1" />
-        <button class="px-4 py-2 rounded bg-[var(--brand)] text-[var(--brand-contrast)]" type="submit">Request Access</button>
-      </form>
-    </section>
-  </main>
-</Base>
+      <div class="card">Charts/CTA image slot</div>
+    </header>
+
+    <main class="container grid grid-2">
+      <section class="card">
+        <h2>Blog</h2>
+        <p>Insights, research, and release notes.</p>
+        <a href="/blog">Read the blog →</a>
+      </section>
+      <section class="card">
+        <h2>Store</h2>
+        <p>Pro tools and add-ons.</p>
+        <a href="/store">Go to store →</a>
+      </section>
+    </main>
+
+    <footer class="container" style="opacity:.7;margin-top:40px">
+      <small>© {year} GoldShore</small>
+      <small>© {new Date().getFullYear()} GoldShore</small>
+    </footer>
+  </body>
+</html>

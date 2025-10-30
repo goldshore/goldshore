@@ -165,34 +165,16 @@ main() {
     records+=("dev.$ZONE_NAME|CNAME|$dev_cname_target|$default_proxied")
   fi
 
-  declare -A host_record_types=()
-  local record
-  for record in "${records[@]}"; do
-    IFS='|' read -r name type content proxied <<<"$record"
+  local -a records=(
+    "$ZONE_NAME CNAME goldshore-org.pages.dev"
+    "www.$ZONE_NAME CNAME goldshore-org.pages.dev"
+    "preview.$ZONE_NAME CNAME goldshore-org-preview.pages.dev"
+    "dev.$ZONE_NAME CNAME goldshore-org-dev.pages.dev"
+  )
 
-    if [[ -z "$name" || -z "$type" || -z "$content" ]]; then
-      echo "Skipping malformed record definition: $record" >&2
-      continue
-    fi
-
-    case "$type" in
-      CNAME)
-        if [[ "${host_record_types[$name]:-}" == "address" ]]; then
-          echo "Configuration error: $name cannot have both address and CNAME records" >&2
-          exit 1
-        fi
-        host_record_types[$name]="cname"
-        ;;
-      A|AAAA)
-        if [[ "${host_record_types[$name]:-}" == "cname" ]]; then
-          echo "Configuration error: $name cannot have both address and CNAME records" >&2
-          exit 1
-        fi
-        host_record_types[$name]="address"
-        ;;
-    esac
-
-    upsert_record "$zone_id" "$name" "$type" "$content" "${proxied:-$default_proxied}"
+  for entry in "${records[@]}"; do
+    read -r host type target <<<"$entry"
+    upsert_record "$zone" "$host" "$type" "$target" true
   done
 
 done
