@@ -70,16 +70,6 @@ function resolveCorsOrigin(request: Request, env: Env): string {
   return configured[0] ?? "*";
 }
 
-function corsHeaders(origin: string): HeadersInit {
-  return {
-    "Access-Control-Allow-Origin": origin,
-    "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
-    "Access-Control-Allow-Headers": "Authorization,Content-Type,X-Requested-With",
-    "Access-Control-Max-Age": "86400",
-    Vary: "Origin"
-  };
-}
-
 function withCors(origin: string, init?: ResponseInit): ResponseInit {
   const headers = new Headers(init?.headers ?? {});
   const cors = corsHeaders(origin);
@@ -448,12 +438,5 @@ export class SessionDO {
         return new Response("Method Not Allowed", { status: 405 });
     }
 
-    const response = await handleWebhook(request, env, ctx);
-    for (const [key, value] of Object.entries(headers)) {
-      if (!response.headers.has(key)) {
-        response.headers.set(key, value);
-      }
-    }
-    return response;
   }
 }
