@@ -59,6 +59,12 @@ export async function commentOnPR(owner: string, repo: string, prNumber: number,
     method: "POST",
     body: JSON.stringify({ body })
   });
+  const { data } = await gh.rest.issues.create({ owner, repo, title, body, labels });
+  return data;
+}
+
+export async function commentOnPR(owner: string, repo: string, prNumber: number, body: string) {
+  await gh.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
 }
 
 export async function createFixBranchAndPR(

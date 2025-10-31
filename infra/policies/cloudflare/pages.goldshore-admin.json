@@ -32,9 +32,20 @@
       ]
     },
     "preview": {
-      "compatibility_date": "2024-02-19",
+      "compatibility_date": "2025-01-15",
       "environment_variables": {
-        "WORKER_HOSTNAME": "admin-preview.goldshore.org"
+        "WORKER_HOSTNAME": "admin-preview.goldshore.org",
+        "API_BASE_URL": "https://api-preview.goldshore.org"
+      },
+      "routes": [
+        "admin-preview.goldshore.org/*"
+      ]
+    },
+    "development": {
+      "compatibility_date": "2025-01-15",
+      "environment_variables": {
+        "WORKER_HOSTNAME": "admin-dev.goldshore.org",
+        "API_BASE_URL": "https://api-dev.goldshore.org"
       }
     }
   },
