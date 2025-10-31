@@ -117,7 +117,6 @@ const navLinks = [
   }
 }
 </style>
-const headerScript = await import("../scripts/headerMenu.ts?url");
 ---
 
 <header class="container header" role="banner">
@@ -265,6 +264,3 @@ const headerScript = await import("../scripts/headerMenu.ts?url");
     mobileMenu.hidden = true;
   }
 </script>
-<script type="module" src={headerScript.default}></script>
-
-<script type="module" src={Astro.resolve("./header-menu.ts")}></script>
