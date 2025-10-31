@@ -62,13 +62,17 @@ remove_conflicting_records() {
   done
 }
 
-upsert_record() {
-  local zone_id=$1
-  local name=$2
-  local type=$3
-  local content=$4
-  local proxied=$5
+    if [[ -n "$ipv6_target" ]]; then
+      records+=("$ZONE_NAME|AAAA|$ipv6_target|$default_proxied")
+    fi
+  fi
 
+  if [[ -n "$www_cname_target" ]]; then
+    records+=("www.$ZONE_NAME|CNAME|$www_cname_target|$default_proxied")
+  fi
+
+  if [[ -n "$preview_cname_target" ]]; then
+    records+=("preview.$ZONE_NAME|CNAME|$preview_cname_target|$default_proxied")
   remove_conflicting_records "$zone_id" "$name" "$type"
 
   local existing_id
@@ -96,8 +100,44 @@ upsert_record() {
       --data "$payload" >/dev/null
     echo "Created $type record for $name"
   fi
-}
 
+  if [[ -n "$dev_cname_target" ]]; then
+    records+=("dev.$ZONE_NAME|CNAME|$dev_cname_target|$default_proxied")
+  fi
+
+  declare -A host_record_types=()
+  local record
+  for record in "${records[@]}"; do
+    IFS='|' read -r name type content proxied <<<"$record"
+
+    if [[ -z "$name" || -z "$type" || -z "$content" ]]; then
+      echo "Skipping malformed record definition: $record" >&2
+      continue
+    fi
+
+    case "$type" in
+      CNAME)
+        if [[ "${host_record_types[$name]:-}" == "address" ]]; then
+          echo "Configuration error: $name cannot have both address and CNAME records" >&2
+          exit 1
+        fi
+        host_record_types[$name]="cname"
+        ;;
+      A|AAAA)
+        if [[ "${host_record_types[$name]:-}" == "cname" ]]; then
+          echo "Configuration error: $name cannot have both address and CNAME records" >&2
+          exit 1
+        fi
+        host_record_types[$name]="address"
+        ;;
+    esac
+
+    upsert_record "$zone_id" "$name" "$type" "$content" "${proxied:-$default_proxied}"
+  done
+
+done
+
+echo "DNS synchronisation complete."
 main() {
   local zone_id=$1
 
