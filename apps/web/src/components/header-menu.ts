@@ -6,6 +6,17 @@ const setupHeaderMenu = () => {
     return;
   }
 
+  if (mobileMenu.dataset.controllerAttached === 'true') {
+    mobileMenu.hidden = true;
+    mobileMenu.classList.remove('is-open');
+    mobileMenu.setAttribute('aria-hidden', 'true');
+    toggleButton.setAttribute('aria-expanded', 'false');
+    toggleButton.setAttribute('aria-label', 'Open navigation menu');
+    return;
+  }
+
+  mobileMenu.dataset.controllerAttached = 'true';
+
   let isOpen = false;
   const focusableSelectors = [
     'a[href]',

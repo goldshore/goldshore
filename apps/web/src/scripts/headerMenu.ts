@@ -2,6 +2,17 @@ const toggleButton = document.querySelector<HTMLButtonElement>('[data-menu-toggl
 const mobileMenu = document.querySelector<HTMLElement>('[data-mobile-menu]');
 
 if (toggleButton && mobileMenu) {
+  if (mobileMenu.dataset.controllerAttached === 'true') {
+    mobileMenu.classList.remove('is-open');
+    mobileMenu.hidden = true;
+    mobileMenu.setAttribute('aria-hidden', 'true');
+    toggleButton.setAttribute('aria-expanded', 'false');
+    toggleButton.setAttribute('aria-label', 'Open navigation menu');
+    return;
+  }
+
+  mobileMenu.dataset.controllerAttached = 'true';
+
   let isOpen = false;
   const focusableSelectors = (
     [
