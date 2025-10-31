@@ -6,8 +6,21 @@ minify = true
 [build]
 command = "npm run -w @goldshore/api-worker build"
 
+[vars]
+GOLDSHORE_ENV = ""
+GOLDSHORE_ORIGIN = ""
+GITHUB_APP_ID = ""
+GITHUB_CLIENT_ID = ""
+CF_ACCOUNT_ID = ""
+CF_ZONE_ID = ""
+CF_API_TOKEN = ""
+
 [observability]
 enabled = true
 
 [triggers]
 crons = ["*/30 * * * *"]
+
+[[routes]]
+pattern = "api.goldshore.org/*"
+zone_name = "goldshore.org"
