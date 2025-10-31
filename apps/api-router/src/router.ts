@@ -14,21 +14,35 @@ const mapHostToAssets = (host: string, env: Env): string =>
       ? env.DEV_ASSETS ?? 'https://goldshore-org-dev.pages.dev'
       : env.PRODUCTION_ASSETS ?? 'https://goldshore-org.pages.dev';
 
-const buildCorsHeaders = (origin: string): Headers => {
+const buildCorsHeaders = (origin: string | null): Headers => {
   const headers = new Headers();
-  headers.set('access-control-allow-origin', origin);
+  if (origin) {
+    headers.set('access-control-allow-origin', origin);
+  }
   headers.set('access-control-allow-methods', 'GET,HEAD,POST,OPTIONS');
   headers.set('access-control-allow-headers', 'accept,content-type');
   headers.set('access-control-max-age', '86400');
+  headers.set('vary', 'origin');
   return headers;
+};
+
+const resolveCorsOrigin = (req: Request, url: URL): string | null => {
+  const headerOrigin = req.headers.get('origin');
+  if (headerOrigin && headerOrigin !== 'null') {
+    return headerOrigin;
+  }
+
+  return `${url.protocol}//${url.host}`;
 };
 
 export default {
   async fetch(req, env): Promise<Response> {
     const url = new URL(req.url);
 
+    const corsOrigin = resolveCorsOrigin(req, url);
+
     if (req.method === 'OPTIONS') {
-      const cors = buildCorsHeaders(`${url.protocol}//${url.host}`);
+      const cors = buildCorsHeaders(corsOrigin);
       cors.set('content-length', '0');
       return new Response(null, { status: 204, headers: cors });
     }
@@ -52,7 +66,7 @@ export default {
 
     const responseHeaders = new Headers(proxiedResponse.headers);
     responseHeaders.set('x-served-by', env.APP_NAME);
-    const cors = buildCorsHeaders(`${url.protocol}//${url.host}`);
+    const cors = buildCorsHeaders(corsOrigin);
     cors.forEach((value, key) => responseHeaders.set(key, value));
 
     return new Response(proxiedResponse.body, {
