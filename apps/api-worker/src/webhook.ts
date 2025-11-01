@@ -4,6 +4,7 @@ import {
   type GitHubAuthEnv,
   type InstallationToken
 } from "./githubAuth";
+import { verifyGitHubWebhook } from "./github/webhook";
 
 export interface WebhookEnv extends GitHubAuthEnv {
   GITHUB_WEBHOOK_SECRET: string;
@@ -21,61 +22,6 @@ interface WebhookContext<TPayload = unknown> {
 type WebhookHandler<TPayload = unknown> = (
   context: WebhookContext<TPayload>
 ) => Promise<Response | void> | Response | void;
-
-const textEncoder = new TextEncoder();
-
-async function verifySignature(payload: string, signatureHeader: string | null, secret: string) {
-  if (!secret) {
-    throw new Error("Missing GITHUB_WEBHOOK_SECRET environment variable");
-  }
-
-  if (!signatureHeader) {
-    return false;
-  }
-
-  const signaturePrefix = "sha256=";
-  if (!signatureHeader.startsWith(signaturePrefix)) {
-    return false;
-  }
-
-  const signatureHex = signatureHeader.slice(signaturePrefix.length);
-  const signatureBytes = hexToUint8Array(signatureHex);
-
-  const key = await crypto.subtle.importKey(
-    "raw",
-    textEncoder.encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign", "verify"]
-  );
-
-  const data = textEncoder.encode(payload);
-  const signatureBuffer = signatureBytes.buffer.slice(
-    signatureBytes.byteOffset,
-    signatureBytes.byteOffset + signatureBytes.byteLength
-  ) as ArrayBuffer;
-  const payloadBuffer = data.buffer.slice(
-    data.byteOffset,
-    data.byteOffset + data.byteLength
-  ) as ArrayBuffer;
-  return crypto.subtle.verify("HMAC", key, signatureBuffer, payloadBuffer);
-}
-
-function hexToUint8Array(hex: string): Uint8Array {
-  if (hex.length % 2 !== 0) {
-    throw new Error("Invalid signature length");
-  }
-
-  const array = new Uint8Array(hex.length / 2);
-  for (let i = 0; i < array.length; i += 1) {
-    const byte = parseInt(hex.substr(i * 2, 2), 16);
-    if (Number.isNaN(byte)) {
-      throw new Error("Signature contains non-hex characters");
-    }
-    array[i] = byte;
-  }
-  return array;
-}
 
 function applyCors(response: Response, origin: string) {
   const headers = corsHeaders(origin);
@@ -133,7 +79,12 @@ export async function handleWebhook(
   const payloadText = await request.text();
   const signature = request.headers.get("x-hub-signature-256");
 
-  const valid = await verifySignature(payloadText, signature, env.GITHUB_WEBHOOK_SECRET);
+  const secret = env.GITHUB_WEBHOOK_SECRET;
+  if (!secret) {
+    throw new Error("Missing GITHUB_WEBHOOK_SECRET environment variable");
+  }
+
+  const valid = await verifyGitHubWebhook(payloadText, signature, secret);
   if (!valid) {
     return respond(JSON.stringify({ error: "Invalid signature" }), { status: 401 });
   }

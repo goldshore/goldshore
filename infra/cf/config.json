@@ -127,7 +127,7 @@
     {
       "name": "goldshore-api",
       "main_entrypoint": "packages/api/dist/index.js",
-      "compatibility_date": "2024-11-21",
+      "compatibility_date": "2025-10-27",
       "placement": {
         "mode": "smart"
       },
@@ -244,7 +244,10 @@
           "OPENAI_DPM_LIMIT": "9000000",
           "RATE_LIMIT_WINDOW_MS": "60000",
           "RATE_LIMIT_BUCKET_SIZE": "3400",
-          "RATE_LIMIT_TOKEN_BUDGET": "170000"
+          "RATE_LIMIT_TOKEN_BUDGET": "170000",
+          "GITHUB_APP_ID": "",
+          "GITHUB_CLIENT_ID": "",
+          "GITHUB_CLIENT_SECRET": ""
         }
       }
     }
