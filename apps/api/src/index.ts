@@ -152,6 +152,7 @@ const router: Record<string, Partial<Record<string, RouteHandler>>> = {
   },
   "/v1/risk/killswitch": {
     POST: async ({ env, tools }) => {
+      await ensureTable(env, "risk_configs");
       await env.DB.prepare("UPDATE risk_configs SET is_published = 0, updated_at = CURRENT_TIMESTAMP").run();
       return tools.respond({ ok: true, message: "Kill switch engaged" });
     },
