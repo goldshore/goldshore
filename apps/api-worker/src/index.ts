@@ -1,5 +1,6 @@
-import { corsHeaders } from "./lib/cors";
-import { handleWebhook, type WebhookEnv } from "./webhook";
+import { allowOrigin, corsHeaders, handleOptions } from "./lib/cors";
+import type { WebhookEnv } from "./webhook";
+import { handleGithubCallback, handleGithubWebhook } from "./routes/github";
 
 export interface Env extends WebhookEnv {}
 
@@ -53,21 +54,7 @@ const JSON_HEADERS: Record<string, string> = {
 };
 
 function resolveCorsOrigin(request: Request, env: Env): string {
-  const headerOrigin = request.headers.get("Origin") ?? "";
-  const configured = (env.GOLDSHORE_CORS || env.GOLDSHORE_ORIGIN || "*")
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean);
-
-  if (configured.length === 0 || configured.includes("*")) {
-    return "*";
-  }
-
-  if (headerOrigin && configured.includes(headerOrigin)) {
-    return headerOrigin;
-  }
-
-  return configured[0] ?? "*";
+  return allowOrigin(request.headers.get("Origin"), env);
 }
 
 function withCors(origin: string, init?: ResponseInit): ResponseInit {
@@ -288,7 +275,7 @@ async function routeRequest(
   const limit = Number(env.RATE_LIMIT_MAX ?? DEFAULT_RATE_LIMIT) || DEFAULT_RATE_LIMIT;
 
   if (request.method === "OPTIONS") {
-    return new Response(null, withCors(origin, { status: 204 }));
+    return handleOptions(request, env);
   }
 
   if (url.pathname === "/health") {
@@ -296,12 +283,21 @@ async function routeRequest(
   }
 
   if (url.pathname === "/github/webhook" && request.method === "POST") {
-    const response = await handleWebhook(request, env, ctx);
-    return new Response(response.body, withCors(origin, {
+    return handleGithubWebhook(request, env, ctx);
+  }
+
+  if (url.pathname === "/auth/github/callback" && request.method === "GET") {
+    const response = await handleGithubCallback();
+    const headers = new Headers(response.headers);
+    const cors = corsHeaders(origin);
+    for (const [key, value] of Object.entries(cors)) {
+      headers.set(key, value);
+    }
+    return new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
-      headers: response.headers
-    }));
+      headers
+    });
   }
 
   let claims: JwtClaims;
