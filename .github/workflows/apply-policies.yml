@@ -130,7 +130,7 @@ jobs:
 
             while IFS= read -r placeholder; do
               local var_name=${placeholder#\${}
-              var_name=${var_name%}}
+              var_name=${var_name%\}}
               if [[ "${var_name}" == "DATE" ]]; then
                 continue
               fi
