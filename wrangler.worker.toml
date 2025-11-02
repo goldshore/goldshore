@@ -27,9 +27,9 @@ DEV_ASSETS = "https://goldshore-org-dev.pages.dev"
 PRODUCTION_ADMIN_ASSETS = "https://goldshore-admin.pages.dev"
 PREVIEW_ADMIN_ASSETS = "https://goldshore-admin.pages.dev"
 DEV_ADMIN_ASSETS = "https://goldshore-admin.pages.dev"
-PRODUCTION_API_ORIGIN = "https://goldshore-api.rmarston.workers.dev"
-PREVIEW_API_ORIGIN = "https://goldshore-api.rmarston.workers.dev"
-DEV_API_ORIGIN = "https://goldshore-api.rmarston.workers.dev"
+PRODUCTION_API_ORIGIN = "https://api.goldshore.org"
+PREVIEW_API_ORIGIN = "https://api.goldshore.org"
+DEV_API_ORIGIN = "https://api.goldshore.org"
 
 [env.production]
 routes = [
