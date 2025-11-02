@@ -153,6 +153,35 @@ export default {
     const headers = new Headers(request.headers);
     headers.delete('host');
 
+    const appendForwardedHeader = (name: string, value: string | null) => {
+      if (!value) return;
+      const existing = headers.get(name);
+      if (!existing) {
+        headers.set(name, value);
+        return;
+      }
+
+      const parts = existing.split(',').map((part) => part.trim());
+      if (!parts.includes(value)) {
+        headers.set(name, `${existing}, ${value}`);
+      }
+    };
+
+    appendForwardedHeader('x-forwarded-host', url.host);
+    appendForwardedHeader('x-forwarded-proto', url.protocol.replace(':', ''));
+
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const connectingIp = request.headers.get('cf-connecting-ip');
+    if (connectingIp) {
+      headers.set(
+        'x-forwarded-for',
+        forwardedFor ? `${forwardedFor}, ${connectingIp}` : connectingIp,
+      );
+    }
+
+    const forwardedPort = url.port || (url.protocol === 'https:' ? '443' : '80');
+    appendForwardedHeader('x-forwarded-port', forwardedPort);
+
     const init: RequestInit = {
       method: request.method,
       headers,
