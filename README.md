@@ -89,6 +89,16 @@ For manual deployments, you can use the `wrangler` CLI. Refer to the `wrangler.t
 
 Each application that deploys to Cloudflare has its own `wrangler.toml` file. This file contains the configuration for the application, including routes, bindings, and environment variables.
 
+### Cloudflare Setup
+
+For a first-time setup, refer to the [Cloudflare Setup Guide](infra/cloudflare/SETUP.md). This guide provides a complete walkthrough of the manual steps required to configure the project on Cloudflare.
+
+To automate the provisioning of Cloudflare resources (D1, KV, R2, Queues), you can use the provisioning script:
+
+```bash
+bash infra/cloudflare/provision.sh
+```
+
 ### Secrets and Environment Variables
 
 Secrets and environment variables are managed using `.dev.vars` for local development and `wrangler secret put` for production environments. Refer to the `.dev.vars.example` file for a list of required variables.

@@ -1,7 +1,6 @@
-name = "goldshore-api"
-main = "src/index.ts"
+name = "goldshore-admin"
+pages_build_output_dir = "dist"
 compatibility_date = "2025-10-05"
-workers_dev = true
 
 [vars]
 CF_TEAM_DOMAIN = "goldshore"
@@ -27,7 +26,3 @@ bucket_name = "assets"
 [[kv_namespaces]]
 binding = "SITE_KV"
 id = "your-kv-namespace-id"
-
-[[queues]]
-binding = "JOBS"
-queue_name = "goldshore-jobs"

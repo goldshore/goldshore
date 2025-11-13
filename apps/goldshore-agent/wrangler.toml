@@ -1,4 +1,4 @@
-name = "goldshore-api"
+name = "goldshore-agent"
 main = "src/index.ts"
 compatibility_date = "2025-10-05"
 workers_dev = true
