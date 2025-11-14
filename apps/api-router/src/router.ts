@@ -67,6 +67,9 @@ export default {
 
     const corsOrigin = resolveCorsOrigin(req);
 
+    const fallbackOrigin = `${url.protocol}//${url.host}`;
+    const requestOrigin = getCorsOrigin(req, fallbackOrigin);
+
     if (req.method === 'OPTIONS') {
       const cors = buildCorsHeaders(corsOrigin);
       cors.set('content-length', '0');
