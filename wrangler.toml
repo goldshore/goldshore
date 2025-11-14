@@ -12,7 +12,13 @@ APP_NAME = "GoldShore"
 PRODUCTION_ASSETS = "https://goldshore-org.pages.dev"
 PREVIEW_ASSETS = "https://goldshore-org-preview.pages.dev"
 DEV_ASSETS = "https://goldshore-org-dev.pages.dev"
-GPT_ALLOWED_ORIGINS = "https://goldshore.org, https://www.goldshore.org, https://preview.goldshore.org, https://dev.goldshore.org, https://goldshore.foundation, https://www.goldshore.foundation, https://goldshorefoundation.org, https://www.goldshorefoundation.org, https://fortune-fund.com, https://www.fortune-fund.com, https://fortune-fund.games, https://www.fortune-fund.games, https://trade.goldshore.org"
+GPT_ALLOWED_ORIGINS = "https://goldshore.org, https://www.goldshore.org, https://preview.goldshore.org, https://dev.goldshore.org, https://trade.goldshore.org"
+PRODUCTION_ADMIN_ASSETS = "https://goldshore-admin.pages.dev"
+PREVIEW_ADMIN_ASSETS = "https://goldshore-admin.pages.dev"
+DEV_ADMIN_ASSETS = "https://goldshore-admin.pages.dev"
+PRODUCTION_API_ORIGIN = "https://api.goldshore.org"
+PREVIEW_API_ORIGIN = "https://api.goldshore.org"
+DEV_API_ORIGIN = "https://api.goldshore.org"
 
 # Secrets such as FORMSPREE_ENDPOINT, TURNSTILE_SECRET, OPENAI_API_KEY, and
 # GPT_SHARED_SECRET (or legacy GPT_PROXY_SECRET) are provided via
@@ -77,15 +83,6 @@ routes = [
   { pattern = "armsway.net/*", zone_name = "armsway.net" },
   { pattern = "banproof.me/*", zone_name = "banproof.me" },
   { pattern = "preview.goldshore.org/*", zone_name = "goldshore.org" }
-  { pattern = "goldshore.foundation/*", zone_name = "goldshore.foundation" },
-  { pattern = "goldshorefoundation.org/*", zone_name = "goldshorefoundation.org" },
-  { pattern = "fortune-fund.com/*", zone_name = "fortune-fund.com" },
-  { pattern = "fortune-fund.games/*", zone_name = "fortune-fund.games" },
-  { pattern = "preview.goldshore.org/*", zone_name = "goldshore.org" },
-  { pattern = "preview.goldshore.foundation/*", zone_name = "goldshore.foundation" },
-  { pattern = "preview.goldshorefoundation.org/*", zone_name = "goldshorefoundation.org" },
-  { pattern = "preview.fortune-fund.com/*", zone_name = "fortune-fund.com" },
-  { pattern = "preview.fortune-fund.games/*", zone_name = "fortune-fund.games" }
 ]
 
 [[analytics_engine_datasets]]
