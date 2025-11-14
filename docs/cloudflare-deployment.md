@@ -44,3 +44,25 @@ This split keeps Git branches and preview deploys from colliding with the live d
 - Monitor analytics with the `GOLD_ANALYTICS` dataset; it is already defined in `wrangler.toml`.
 
 With this layout, Cloudflare Pages delivers the site, Workers protects the domain, and billing stays predictable.
+
+## DNSSEC
+
+Cloudflare signs `goldshore.org` automatically once DNSSEC is enabled at the registrar. Provide the following DS record to your
+registrar to complete the setup:
+
+```
+goldshore.org. 3600 IN DS 2371 13 2 1B0CAFD207160357C84F6E0E505617333275A23BACBF6DA0E2D1FCB388E8C420
+```
+
+- **Digest type:** `2` (SHA-256)
+- **Algorithm:** `13`
+- **Key tag:** `2371`
+- **Flags:** `257` (KSK)
+
+Most registrars only ask for the digest, digest type, and key tag. If you need the full public key, use:
+
+```
+mdsswUyr3DPW132mOi8V9xESWE8jTo0dxCjjnopKl+GqJxpVXckHAeF+KkxLbxILfDLUT0rAK9iUzy1L53eKGQ==
+```
+
+After adding the DS record, allow DNS to propagate and verify the status in the Cloudflare dashboard under **DNS → DNSSEC**.

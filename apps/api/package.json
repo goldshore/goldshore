@@ -1,5 +1,5 @@
 {
-  "name": "@goldshore/api-worker",
+  "name": "@goldshore/api",
   "private": true,
   "version": "0.1.0",
   "type": "module",
