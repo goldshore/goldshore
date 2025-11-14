@@ -28,6 +28,11 @@ interface RouteContext {
   tools: RouteTools;
 }
 
+type RouteHandlerResult = Response | JsonValue | Record<string, any>;
+
+type RouteHandler = (
+  ctx: RouteContext
+) => Promise<RouteHandlerResult> | RouteHandlerResult;
 type HandlerResult = Response | JsonValue | Record<string, any>;
 
 type RouteHandler = (context: RouteContext) => Promise<HandlerResult> | HandlerResult;
@@ -59,6 +64,7 @@ const jsonResponse = (
   return new Response(JSON.stringify(body), { status, headers: merged });
 };
 
+const router: Router = {
 const createRouter = (): Router => ({
   "/v1/health": {
     GET: async ({ tools }) => tools.respond({ ok: true, ts: Date.now() }),
@@ -67,7 +73,7 @@ const createRouter = (): Router => ({
     GET: async ({ req, tools }) => {
       const email = req.headers.get("cf-access-authenticated-user-email");
       const ok = !!email;
-      return tools.respond(ok ? { ok, email } : { ok: false, error: "UNAUTHENTICATED" });
+      return tools.respond(ok ? { ok, email } : { ok: false, error: "UNAUTHENTICATED" }, ok ? 200 : 401);
     },
   },
   "/v1/lead": {
@@ -79,7 +85,7 @@ const createRouter = (): Router => ({
         : Object.fromEntries((await req.formData()).entries());
       const email = (payload.email || "").toString().trim();
       const emailRegex =
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        /^(([^<>()[\\.,;:\s@"]+(\\.[^<>()[\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       if (!email) {
         return tools.respond({ ok: false, error: "EMAIL_REQUIRED" }, 400);
       }
@@ -160,7 +166,28 @@ const createRouter = (): Router => ({
       return tools.respond({ ok: true, message: "Kill switch engaged" });
     },
   },
-});
+};
+
+function matchRoute(pattern: string, pathname: string): RouteParams | null {
+  const paramNames: string[] = [];
+  const regexPattern = pattern.replace(/:[^/]+/g, segment => {
+    paramNames.push(segment.slice(1));
+    return "([^/]+)";
+  });
+  const regex = new RegExp(`^${regexPattern}$`);
+  const match = pathname.match(regex);
+  if (!match) {
+    return null;
+  }
+  const params: RouteParams = {};
+  paramNames.forEach((name, index) => {
+    const value = match[index + 1];
+    if (value !== undefined) {
+      params[name] = decodeURIComponent(value);
+    }
+  });
+  return params;
+}
 
 const router = createRouter();
 
@@ -169,13 +196,23 @@ export default {
     const corsHeaders = cors(req, env.CORS_ORIGINS);
     const jsonHeaders = { ...JSON_CONTENT_HEADERS, ...corsHeaders };
 
+    const applyCors = (headers: HeadersInit = {}): Headers => {
+      const merged = new Headers(headers);
+      const extras = new Headers(corsHeaders);
+      extras.forEach((value, key) => {
+        merged.set(key, value);
+      });
+      return merged;
+    };
+
     const tools: RouteTools = {
       corsHeaders,
       jsonHeaders,
-      respond: (body, status = 200, headers = jsonHeaders) => jsonResponse(body, status, headers),
+      respond: (body, status = 200, headers = jsonHeaders) => jsonResponse(body, status, applyCors(headers)),
     };
 
     if (req.method === "OPTIONS") {
+      return new Response(null, { headers: applyCors(corsHeaders) });
       return new Response(null, { headers: corsHeaders });
     }
 
@@ -183,6 +220,9 @@ export default {
     const path = url.pathname;
     const method = req.method.toUpperCase();
 
+    for (const [pattern, handlers] of Object.entries(router)) {
+      const params = matchRoute(pattern, path);
+      if (!params) continue;
     for (const route in router) {
       const pattern = new RegExp(`^${route.replace(/:\w+/g, "([^/]+)")}$`);
       const match = path.match(pattern);
@@ -200,7 +240,7 @@ export default {
         }
       });
 
-      const handler = router[route]?.[method];
+      const handler = handlers?.[method];
       if (!handler) {
         return tools.respond({ ok: false, error: "METHOD_NOT_ALLOWED" }, 405);
       }
@@ -209,6 +249,7 @@ export default {
       if (result instanceof Response) {
         return result;
       }
+      return tools.respond(result ?? { ok: true });
 
       return tools.respond((result ?? { ok: true }) as JsonValue | Record<string, any>);
     }
